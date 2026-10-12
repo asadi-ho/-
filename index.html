@@ -1,0 +1,1252 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>رادار ایده</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: right-hand navy sidebar (bottom tab bar on phones) + a content column of summary-first panels.
+   Palette: deep navy structure, teal accent, semantic green/amber/red used only with a text label. */
+:root{
+  --bg:#f3f6f8; --surface:#ffffff; --surface-2:#f7f9fb; --fg:#10212e; --muted:#566877; --line:#d9e2e8; --line-strong:#b9c7d1;
+  --navy:#12324a; --accent:#0c8686; --accent-soft:#dcf1f0; --accent-fg:#ffffff;
+  --good:#16764d; --good-bg:#e0f3ea; --warn:#8f5400; --warn-bg:#fcefd0; --bad:#b3261e; --bad-bg:#fbe3e1; --na:#4d5f6d; --na-bg:#e8eef2;
+  --side-bg:#12324a; --side-fg:#d6e4ee; --side-mute:#8fb0c6; --side-on:rgba(255,255,255,.12);
+  --shadow:0 1px 2px rgba(16,33,46,.06),0 4px 14px rgba(16,33,46,.05);
+  --font:'Vazirmatn',Tahoma,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b151d; --surface:#122029; --surface-2:#0f1b24; --fg:#e5edf2; --muted:#93a6b3; --line:#25384640; --line:#253846; --line-strong:#3a5162;
+  --navy:#8cc2e6; --accent:#3cc4bf; --accent-soft:#12383a; --accent-fg:#04211f;
+  --good:#52c78e; --good-bg:#123425; --warn:#e8b25a; --warn-bg:#3b2d10; --bad:#ff948b; --bad-bg:#3e1b19; --na:#a2b4c0; --na-bg:#1b2c37;
+  --side-bg:#08121a; --side-fg:#cfdde7; --side-mute:#7f98a8; --side-on:rgba(255,255,255,.09);
+  --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b151d; --surface:#122029; --surface-2:#0f1b24; --fg:#e5edf2; --muted:#93a6b3; --line:#253846; --line-strong:#3a5162;
+  --navy:#8cc2e6; --accent:#3cc4bf; --accent-soft:#12383a; --accent-fg:#04211f;
+  --good:#52c78e; --good-bg:#123425; --warn:#e8b25a; --warn-bg:#3b2d10; --bad:#ff948b; --bad-bg:#3e1b19; --na:#a2b4c0; --na-bg:#1b2c37;
+  --side-bg:#08121a; --side-fg:#cfdde7; --side-mute:#7f98a8; --side-on:rgba(255,255,255,.09);
+  --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.7;margin:0;padding:0}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.side{background:var(--side-bg);color:var(--side-fg);padding:20px 14px;display:flex;flex-direction:column;gap:20px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;align-self:start}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+.brand svg{width:34px;height:34px;flex:none}
+.brand b{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.2px;display:block;line-height:1.2}
+.brand small{color:var(--side-mute);font-size:12px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--side-fg);font-size:14.5px;font-weight:500}
+.nav button:hover{background:var(--side-on)}
+.nav button[aria-current="page"]{background:var(--side-on);color:#fff;font-weight:700;box-shadow:inset -3px 0 0 var(--accent)}
+.nav svg{width:19px;height:19px;flex:none}
+.side .who{margin-top:auto;font-size:12.5px;color:var(--side-mute);display:flex;flex-direction:column;gap:4px;padding:0 6px}
+.content{padding:20px 28px 56px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top h1{margin:0;font-size:22px;font-weight:800;color:var(--navy)}
+.savebox{font-size:13px;display:inline-flex;align-items:center;gap:6px;color:var(--muted);min-height:24px}
+.savebox.ok{color:var(--good)}.savebox.err{color:var(--bad);font-weight:700}
+.savebox svg{width:16px;height:16px}
+.spin{animation:sp .8s linear infinite}@keyframes sp{to{transform:rotate(-360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tabbar{display:none}
+@media(max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .content{padding:14px 16px calc(84px + env(safe-area-inset-bottom,0px))}
+  .tabbar{display:flex;position:fixed;inset-inline:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px));z-index:20}
+  .tabbar button{all:unset;box-sizing:border-box;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;font-size:10.5px;color:var(--muted);cursor:pointer;text-align:center;border-radius:8px;line-height:1.3}
+  .tabbar button[aria-current="page"]{color:var(--accent);font-weight:700;background:var(--accent-soft)}
+  .tabbar svg{width:21px;height:21px}
+}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow);min-width:0}
+.panel>h2,.ph h2{margin:0;font-size:16.5px;color:var(--navy);font-weight:800}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.grid{display:grid;gap:12px;min-width:0}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media(max-width:1100px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.g2,.g3{grid-template-columns:minmax(0,1fr)}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile b{font-size:26px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.3}
+.tile span{font-size:12.5px;color:var(--muted)}
+.tile.attn b{color:var(--warn)}
+.btn{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);padding:8px 14px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:38px}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{filter:brightness(.95)}
+.btn.danger{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn.sm{padding:4px 10px;min-height:30px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.lbl{font-weight:700;font-size:14px;display:flex;gap:6px;align-items:baseline}
+.req{color:var(--bad)}.opt{font-weight:400;font-size:12px;color:var(--muted)}
+.in{width:100%;font:inherit;color:var(--fg);background:var(--surface-2);border:1px solid var(--line-strong);border-radius:8px;padding:8px 11px;min-height:40px}
+textarea.in{min-height:78px;resize:vertical}
+.fld.has-err .in{border-color:var(--bad)}
+.err{color:var(--bad);font-size:13px;font-weight:500;display:flex;gap:5px;align-items:center}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:13.5px;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--fg);padding:5px 12px;border-radius:999px;cursor:pointer;min-height:34px}
+.seg button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--surface);font-weight:700}
+.seg.num button{min-width:38px;padding:5px 0;border-radius:8px}
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);padding-bottom:0}
+.tabs button{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:var(--muted);padding:9px 14px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--accent)}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;white-space:nowrap}
+.tag svg{width:12px;height:12px}
+.t-good{background:var(--good-bg);color:var(--good)}.t-warn{background:var(--warn-bg);color:var(--warn)}
+.t-bad{background:var(--bad-bg);color:var(--bad)}.t-na{background:var(--na-bg);color:var(--na);border:1px dashed var(--line-strong)}
+.t-info{background:var(--accent-soft);color:var(--accent)}
+.chip{display:inline-block;font-size:12.5px;background:var(--na-bg);color:var(--fg);padding:1px 9px;border-radius:6px;margin:2px 0 2px 4px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:12.5px;color:var(--muted);font-weight:500;text-align:start;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .name{font-weight:700;color:var(--fg)}
+.tbl .name small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.num{font-variant-numeric:tabular-nums}
+.idx{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.idx b{font-size:17px;font-variant-numeric:tabular-nums;line-height:1.2}
+.idx small{color:var(--muted);font-size:11.5px}
+.meter{height:7px;background:var(--na-bg);border-radius:4px;overflow:hidden;min-width:60px}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.meter.warn i{background:var(--warn)}.meter.bad i{background:var(--bad)}
+.link{all:unset;color:var(--accent);cursor:pointer;font-weight:700}
+.link:hover{text-decoration:underline}.link:focus-visible{outline:2px solid var(--accent)}
+.tblw{overflow-x:auto;max-width:100%}
+@media(max-width:760px){
+  .stack thead{display:none}
+  .stack,.stack tbody,.stack tr,.stack td{display:block;width:100%}
+  .stack tr{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:10px;background:var(--surface)}
+  .stack td{border:0;padding:5px 0;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .stack td::before{content:attr(data-l);color:var(--muted);font-size:12.5px;flex:none}
+  .stack td.first{display:block;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .stack td.first::before{display:none}
+  .stack td.acts{justify-content:flex-start}.stack td.acts::before{display:none}
+}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.opp{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:9px;background:var(--surface-2);min-width:0}
+.opp h3{margin:0;font-size:16px;color:var(--navy)}
+.opp .rank{font-size:12px;color:var(--muted)}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mini div{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted)}
+.mini b{font-size:18px;color:var(--fg);font-variant-numeric:tabular-nums;line-height:1.2}
+.empty{border:1px dashed var(--line-strong);border-radius:10px;padding:22px 16px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+.empty b{color:var(--fg)}
+.note{border:1px solid var(--line);border-inline-start:4px solid var(--warn);background:var(--surface);padding:10px 14px;border-radius:8px;font-size:14px;display:flex;gap:8px;align-items:flex-start}
+.note.info{border-inline-start-color:var(--accent)}
+.note.bad{border-inline-start-color:var(--bad)}
+.rowitem{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--surface-2)}
+.rowitem .bar{justify-content:space-between}
+.sec{display:flex;flex-direction:column;gap:14px}
+.crit{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--surface-2)}
+.crit h3{margin:0;font-size:15px;color:var(--navy)}
+.anch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:12px;color:var(--muted)}
+.anch span b{color:var(--fg);display:block}
+@media(max-width:700px){.anch{grid-template-columns:1fr}}
+.sticky-actions{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom,0px));background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:var(--shadow);z-index:5}
+@media(min-width:901px){.sticky-actions{bottom:12px}}
+.ov{position:fixed;inset:0;background:rgba(8,18,26,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.dlg{background:var(--surface);color:var(--fg);border-radius:12px;padding:20px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:12px;border:1px solid var(--line)}
+.dlg h3{margin:0;font-size:17px}.dlg p{margin:0;color:var(--muted)}
+.cmp th:first-child,.cmp td:first-child{position:sticky;inset-inline-start:0;background:var(--surface);z-index:1;min-width:150px}
+.cmp td,.cmp th{min-width:130px}
+.kv{display:grid;grid-template-columns:minmax(110px,160px) minmax(0,1fr);gap:6px 14px;font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:560px){.kv{grid-template-columns:1fr}.kv dt{margin-top:6px}}
+.chart text{fill:var(--muted);font-family:var(--font);font-size:10px}
+.chart .dot{fill:var(--accent);stroke:var(--surface);stroke-width:1.5}
+.chart .dn{fill:var(--accent-fg);font-weight:700;font-size:9px}
+.legendl{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legendl b{color:var(--accent)}
+.sample{font-size:11px}
+.lockmsg{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px;background:var(--na-bg);padding:10px 12px;border-radius:8px}
+details.h summary{cursor:pointer;font-weight:700;color:var(--navy)}
+@media(prefers-reduced-motion:no-preference){.btn,.tag{transition:background .12s,border-color .12s}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.6 0 4.5 1.8 4.5 4.5"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+<symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M5 7l-3 7a3.5 3.5 0 0 0 6 0L5 7zM19 7l-3 7a3.5 3.5 0 0 0 6 0l-3-7zM8 21h8"/></symbol>
+<symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3M7.5 15h9"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3L12 4zM12 10v4M12 17.5v.01"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></symbol>
+<symbol id="i-archive" viewBox="0 0 24 24"><path d="M3 5h18v4H3zM5 9v10h14V9M10 13h4"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-spin" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/></symbol>
+</defs></svg>
+
+<div class="app" dir="rtl" lang="fa">
+  <aside class="side">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#3cc4bf" stroke-width="2"/><circle cx="20" cy="20" r="10" fill="none" stroke="#3cc4bf" stroke-width="1.5" opacity=".6"/><circle cx="20" cy="20" r="3" fill="#3cc4bf"/><path d="M20 20L33 11" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="29" cy="13.5" r="2.4" fill="#fff"/></svg>
+      <div><b>رادار ایده</b><small>انتخاب کسب‌وکار جانبی</small></div>
+    </div>
+    <nav class="nav" id="sidenav" aria-label="بخش‌های اصلی"></nav>
+    <div class="who" id="who"></div>
+  </aside>
+  <div class="content">
+    <div class="top"><h1 id="pageTitle">داشبورد</h1><span class="savebox" id="savebox" role="status" aria-live="polite"></span></div>
+    <div id="banner" class="grid"></div>
+    <main id="main" tabindex="-1"><div class="empty">در حال بارگذاری…</div></main>
+  </div>
+  <nav class="tabbar" id="tabbar" aria-label="بخش‌های اصلی"></nav>
+</div>
+<div id="dlg"></div>
+
+<script>
+(function(){
+'use strict';
+/* ================= helpers ================= */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fa=(n,d=0)=>(n==null||isNaN(n))?'—':Number(n).toLocaleString('fa-IR',{maximumFractionDigits:d});
+const toNum=v=>{if(v==null||v==='')return null;if(typeof v==='number')return isFinite(v)?v:null;
+  const s=String(v).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٬,\s]/g,'').replace(/٫/g,'.');
+  if(!/^-?\d*\.?\d+$/.test(s))return NaN;return parseFloat(s)};
+const newId=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const getPath=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const setPath=(o,p,v)=>{const ks=p.split('.');let a=o;ks.slice(0,-1).forEach((k,i)=>{if(a[k]==null)a[k]=/^\d+$/.test(ks[i+1])?[]:{};a=a[k]});a[ks[ks.length-1]]=v};
+const tags=s=>String(s||'').split(/[,،\n]+/).map(x=>x.trim()).filter(Boolean);
+const dateFa=ts=>ts?new Date(ts).toLocaleDateString('fa-IR'):'—';
+const ico=(n,c='')=>`<svg class="i ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const norm=s=>String(s||'').toLowerCase().replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/\s+/g,' ').trim();
+
+/* ================= domain constants ================= */
+const JOB=[['full','شاغل تمام‌وقت'],['part','شاغل پاره‌وقت'],['free','آزادکار'],['other','سایر']];
+const TEAMROLE=[['tech','فنی و مهندسی'],['product','محصول و طراحی'],['sales','فروش و بازاریابی'],['ops','مدیریت و عملیات'],['fin','مالی و حسابداری'],['legal','مجوز و امور اداری'],['invest','فقط سرمایه‌گذار']];
+const LEVELS=[[1,'مقدماتی'],[2,'در حد پروژه‌ی کوچک'],[3,'مستقل'],[4,'مسلط'],[5,'مرجع']];
+const CLIENT=[['none','ندارم'],['few','چند آشنا'],['some','چند مشتری بالقوه‌ی مشخص'],['strong','دسترسی مستقیم به تصمیم‌گیران']];
+const HORIZON=[[3,'تا ۳ ماه'],[6,'تا ۶ ماه'],[12,'تا ۱ سال'],[24,'بیش از ۱ سال']];
+const QUIT=[['no','نه'],['later','بعد از رسیدن درآمد به حقوقم'],['yes','بله، اگر ایده درست باشد']];
+const GEO=[['iran','ایران'],['nb','کشورهای همسایه'],['both','ایران و همسایه'],['global','بازار جهانی']];
+const CONFL={high:['بالا','good','check'],med:['متوسط','warn','alert'],low:['پایین','bad','alert']};
+const ISTATUS=[['new','ایده‌ی اولیه (مرحله خودکار)'],['validating','در حال اعتبارسنجی'],['paused','متوقف'],['launched','راه‌اندازی‌شده']];
+const ETYPE=[['hyp','فرضیه'],['init','شواهد اولیه'],['val','شواهد معتبر از مشتری یا بازار']];
+const ETYPE_HELP={hyp:'باور یا حدس بدون داده‌ی بیرونی',init:'نشانه‌های غیرمستقیم: جست‌وجو، گفت‌وگوی غیررسمی، داده‌ی رقبا',val:'رفتار واقعی مشتری: پیش‌فروش، قرارداد، پرداخت یا مصاحبه‌ی ساختاریافته'};
+const EPOINTS={hyp:0,init:1,val:3}, ETARGET=9;
+const ASTATUS=[['untested','آزمون‌نشده'],['supported','پشتیبانی‌شده با شواهد'],['refuted','ردشده']];
+const DECISION=[['continue','ادامه'],['modify','اصلاح'],['stop','توقف']];
+const KIND=[['fact','واقعیت تأییدشده (با منبع)'],['estimate','تخمین'],['assumption','فرضیه'],['unknown','نامعلوم']];
+const CONF=[['low','اطمینان کم'],['med','اطمینان متوسط'],['high','اطمینان زیاد']];
+const LCATS={energy:'انرژی و فنی‌مهندسی',build:'ساختمان',med:'پزشکی',trade:'بازرگانی و واردات',food:'غذا و کافه',local:'خدمات محلی و سبک زندگی',digital:'دیجیتال و دلاری'};
+const LNAMES=['مهدی موحد','رسول','حسین','جواد','احسان','علیرضا','بهناز','نرگس','عاطفه','فاطمه','دنیا','محمدحسین'];
+const MKT=[['customer','مشتری هدف و قدرت خرید','مشتری چقدر توان و عادت پرداخت دارد؟'],['size','اندازه و دسترسی‌پذیری بازار','چند مشتری بالقوه هست و چطور به آن‌ها می‌رسیم؟'],['compet','رقبا و جایگزین‌های موجود','مشتری الان چطور این مسئله را حل می‌کند؟'],['pricing','قیمت‌گذاری و هزینه‌های واقعی','قیمت فروش، بهای تمام‌شده و هزینه‌های پنهان'],['legal','محدودیت‌های قانونی و اجرایی','مجوز، صلاحیت، مالیات، تحریم، ارز'],['supply','ریسک تأمین، پرداخت و توزیع','تأمین‌کننده، تسویه، ارسال، وابستگی به یک نفر'],['start','شروع کوچک و اولین درآمد','کوچک‌ترین نسخه‌ای که می‌شود فروخت'],['channel','بازار محلی در برابر دیجیتال و صادراتی','کجا فرصت بهتر است و چرا']];
+const TSTATUS=[['planned','برنامه‌ریزی‌شده'],['running','در حال اجرا'],['passed','موفق'],['failed','ناموفق']];
+const METHODS=[['interview','مصاحبه با مشتری هدف','حداقل ۵ مصاحبه و ۳ نفر که مسئله را مهم‌ترین دغدغه‌ی خود بدانند'],['presale','پیش‌فروش یا پیش‌ثبت‌نام','حداقل ۳ پرداخت یا تعهد کتبی'],['landing','صفحه‌ی فرود و آگهی آزمایشی','نرخ ثبت‌نام بالای ۵٪ از بازدیدکنندگان'],['price','آزمون قیمت','حداقل نیمی از مخاطبان قیمت هدف را بپذیرند'],['pilot','پایلوت کوچک با یک مشتری','یک مشتری حاضر باشد پول بدهد و دوباره سفارش دهد'],['other','روش دیگر','']];
+const CRIT=[
+ {id:'demand',g:'econ',name:'تقاضای واقعی بازار',def:'آیا مشتری‌ها همین حالا برای حل این مسئله وقت یا پول خرج می‌کنند؟',a:['هیچ نشانه‌ای از تقاضا نیست','نشانه‌های غیرمستقیم وجود دارد','مشتریان واقعی پرداخت یا پیش‌خرید کرده‌اند'],w:20},
+ {id:'speed',g:'econ',name:'سرعت رسیدن به اولین درآمد',def:'از شروع کار تا اولین پول واقعی چقدر طول می‌کشد؟',a:['بیش از ۱۲ ماه','حدود ۴ تا ۶ ماه','کمتر از ۱ ماه'],w:10},
+ {id:'margin',g:'econ',name:'حاشیه سود و پتانسیل سودآوری',def:'بعد از همه‌ی هزینه‌ها چه سهمی از فروش می‌ماند؟',a:['زیان‌ده یا حاشیه زیر ۵٪','حاشیه ۲۰ تا ۳۰٪','حاشیه بالای ۵۰٪ و هزینه‌ی متغیر کم'],w:15},
+ {id:'growth',g:'econ',name:'امکان رشد و توسعه',def:'اگر جواب بدهد، چقدر می‌شود بدون رشد هم‌اندازه‌ی وقت و هزینه بزرگش کرد؟',a:['سقف رشد به وقت خودمان وابسته است','با استخدام یا ابزار چند برابر می‌شود','بدون رشد خطی هزینه قابل تکثیر است'],w:5},
+ {id:'risk',g:'econ',name:'ریسک اجرایی و مالی (امتیاز بالا یعنی ریسک کمتر)',def:'احتمال و اندازه‌ی زیان، وابستگی به مجوز، ارز، تحریم یا یک تأمین‌کننده',a:['احتمال زیان کل سرمایه یا وابستگی خطرناک','ریسک متوسط و قابل مدیریت','زیان احتمالی کوچک و برگشت‌پذیر'],w:10},
+ {id:'skill',g:'fit',auto:true,name:'تناسب با مهارت‌های اعضا',def:'مهارت‌های موردنیاز ایده در مقابل بهترین سطح مهارت اعضای علاقه‌مند. به‌صورت خودکار از پروفایل‌ها محاسبه می‌شود.',a:['هیچ‌یک از مهارت‌ها در گروه نیست','حدود نیمی از مهارت‌ها با تسلط متوسط','همه‌ی مهارت‌ها با تسلط بالا'],w:15},
+ {id:'time',g:'fit',auto:true,name:'تناسب با زمان قابل‌اختصاص',def:'ساعت هفتگی اعضای علاقه‌مند در برابر زمان موردنیاز. امتیاز ۱۰ یعنی ۱٫۵ برابر نیاز یا بیشتر.',a:['زمان موجود کمتر از ۱۵٪ نیاز','زمان موجود حدود نصف نیاز','زمان موجود ۱٫۵ برابر نیاز یا بیشتر'],w:10},
+ {id:'capital',g:'fit',auto:true,name:'تناسب سرمایه‌ی موردنیاز با منابع گروه',def:'سرمایه‌ی قابل‌اختصاص اعضای علاقه‌مند در برابر سرمایه‌ی اولیه‌ی تخمینی. فقط مدیر می‌تواند آن را محاسبه کند، چون داده‌ی مالی خصوصی است.',a:['سرمایه‌ی گروه تقریباً صفر است','حدود نیمی از نیاز پوشش داده می‌شود','نیاز کامل پوشش داده می‌شود (۷) یا بیشتر'],w:15}];
+const DEFW=Object.fromEntries(CRIT.map(c=>[c.id,c.w]));
+const GNAME={econ:'جذابیت اقتصادی و بازار',fit:'تناسب با اعضا و منابع گروه',val:'میزان اعتبارسنجی و قوت شواهد'};
+const NAV=[['dash','داشبورد','dash'],['members','اعضا و پروفایل‌ها','users'],['ideas','ایده‌های کسب‌وکار','bulb'],['eval','ارزیابی و مقایسه','scale'],['valid','برنامه اعتبارسنجی','flask'],['settings','تنظیمات و خروجی داده‌ها','gear']];
+const PAGE_TITLE=Object.fromEntries(NAV.map(n=>[n[0],n[1]]));
+const lab=(arr,k)=>{const f=arr.find(x=>String(x[0])===String(k));return f?f[1]:''};
+
+/* ================= state ================= */
+const S={members:{},members_private:{},ideas:{},evals:{},votes:{},tests:{},config:{}};
+const UI={view:'dash',id:null,tab:null,sec:'basic',draft:null,errors:{},dirty:false,save:{st:'idle',msg:''},ready:false,
+  compare:[],q:'',stage:'',showArch:false,tfilter:'',weightsDraft:null,evalDraft:null,testDraft:null,votePick:null,pending:false};
+const ENV={mode:'local',db:null,uid:'local',admin:true,canWrite:true,isOwner:false,note:''};
+const weights=()=>Object.assign({},DEFW,(S.config.main||{}).weights||{});
+const myKey=()=>ENV.uid;
+const canEditMember=id=>ENV.canWrite&&(ENV.admin||id===myKey());
+
+/* ================= scoring core (pure) ================= */
+function indexOf(ids,eff,W){
+  let all=0,known=0,sum=0;
+  ids.forEach(id=>{const w=W[id]||0;all+=w;const v=eff[id].v;if(v!=null){known+=w;sum+=v*w}});
+  const cov=all?known/all:0;
+  return {score:known?sum/known*10:null,cov,known:ids.filter(id=>eff[id].v!=null).length,total:ids.length};
+}
+function crewOf(idea,votes,members){
+  return Object.keys(votes||{}).filter(mk=>{const v=((votes[mk]||{}).votes||{})[idea.id];return members[mk]&&v&&(v.join==='yes'||v.join==='maybe')});
+}
+function autoScores(idea,ctx){
+  const {members,priv,votes}=ctx, crew=crewOf(idea,votes,members), out={};
+  const clamp=x=>Math.max(0,Math.min(10,x));
+  // skill
+  const req=tags(idea.requiredSkills);
+  if(!req.length)out.skill={v:null,why:'مهارت‌های موردنیاز ایده ثبت نشده است.'};
+  else if(!crew.length)out.skill={v:null,why:'هنوز عضوی اعلام نکرده که در این ایده شریک می‌شود.'};
+  else{
+    const best=req.map(r=>{let b=0;crew.forEach(mk=>(members[mk].skills||[]).forEach(s=>{const n=norm(s.name),q=norm(r);if(n&&q&&Number(s.level)&&(n.includes(q)||q.includes(n)))b=Math.max(b,Number(s.level))}));return b});
+    out.skill={v:clamp(best.reduce((a,b)=>a+b/5,0)/req.length*10),why:`از ${fa(req.length)} مهارت موردنیاز، بهترین سطح اعضا: ${best.map(b=>fa(b)).join('، ')} از ۵`};
+  }
+  // time
+  const need=toNum(idea.weeklyHours);
+  if(need==null||isNaN(need)||need<=0)out.time={v:null,why:'زمان هفتگی موردنیاز ایده ثبت نشده است.'};
+  else if(!crew.length)out.time={v:null,why:'هنوز عضوی اعلام نکرده که در این ایده شریک می‌شود.'};
+  else{const avail=crew.reduce((s,mk)=>s+(Number(members[mk].hoursPerWeek)||0),0);
+    out.time={v:clamp(avail/need/1.5*10),why:`${fa(avail)} ساعت قابل‌اختصاص در برابر ${fa(need)} ساعت موردنیاز`}}
+  // capital
+  const cap=toNum(idea.capital);
+  if(cap==null||isNaN(cap))out.capital={v:null,why:'سرمایه‌ی اولیه‌ی تخمینی ثبت نشده است.'};
+  else if(!crew.length)out.capital={v:null,why:'هنوز عضوی اعلام نکرده که در این ایده شریک می‌شود.'};
+  else{
+    const withP=crew.filter(mk=>priv[mk]&&priv[mk].capital!=null);
+    if(!withP.length)out.capital={v:null,why:ENV.admin?'سرمایه‌ی اعضای علاقه‌مند در پروفایل‌ها ثبت نشده است.':'این محاسبه فقط برای مدیر در دسترس است.'};
+    else if(cap===0)out.capital={v:10,why:'ایده سرمایه‌ی اولیه نیاز ندارد.'};
+    else{const avail=withP.reduce((s,mk)=>s+(Number(priv[mk].capital)||0),0);
+      out.capital={v:clamp(avail/cap*7),why:`${fa(avail)} میلیون تومان سرمایه‌ی قابل‌اختصاص در برابر ${fa(cap)} میلیون نیاز${withP.length<crew.length?' (برای '+fa(crew.length-withP.length)+' نفر داده‌ی سرمایه ثبت نشده)':''}`}}
+  }
+  return out;
+}
+const CORE_FIELDS=['title','problem','target','solution','product','revenue','industry','geo','advantage','capital','launchWeeks','weeklyHours','competitors','requiredSkills','risks'];
+function dataCompleteness(i){
+  let n=0,t=CORE_FIELDS.length+2+MKT.length;
+  MKT.forEach(m=>{const x=(i.market||{})[m[0]];if(x&&String(x.text||'').trim())n++});
+  CORE_FIELDS.forEach(f=>{const v=i[f];if(v!=null&&String(v).trim()!==''&&!(typeof v==='number'&&isNaN(v)))n++});
+  if((i.assumptions||[]).some(a=>a.text))n++; if((i.evidence||[]).some(a=>a.text))n++;
+  return n/t;
+}
+function computeIdea(idea,ctx){
+  const W=ctx.weights, ev=(ctx.evals[idea.id]||{}).scores||{}, auto=autoScores(idea,ctx), eff={};
+  CRIT.forEach(c=>{
+    const m=ev[c.id];
+    if(m&&m.v!=null&&!isNaN(m.v))eff[c.id]={v:Number(m.v),src:'manual',note:m.note||'',why:''};
+    else if(c.auto&&auto[c.id]&&auto[c.id].v!=null)eff[c.id]={v:auto[c.id].v,src:'auto',note:(m&&m.note)||'',why:auto[c.id].why};
+    else eff[c.id]={v:null,src:'missing',note:(m&&m.note)||'',why:c.auto&&auto[c.id]?auto[c.id].why:''};
+  });
+  const econ=indexOf(CRIT.filter(c=>c.g==='econ').map(c=>c.id),eff,W);
+  const fit=indexOf(CRIT.filter(c=>c.g==='fit').map(c=>c.id),eff,W);
+  const all=indexOf(CRIT.map(c=>c.id),eff,W);
+  const src={manual:0,auto:0,missing:0};CRIT.forEach(c=>src[eff[c.id].src]++);
+  const dc=dataCompleteness(idea);
+  const cnt={hyp:0,init:0,val:0}; (idea.evidence||[]).forEach(e=>{if(e.text&&cnt[e.type]!=null)cnt[e.type]++});
+  const pts=cnt.init*EPOINTS.init+cnt.val*EPOINTS.val;
+  const val={score:Math.min(100,pts/ETARGET*100),cnt};
+  const votes=Object.keys(ctx.votes).map(mk=>({mk,v:((ctx.votes[mk]||{}).votes||{})[idea.id]})).filter(x=>x.v&&ctx.members[x.mk]);
+  const rated=votes.filter(x=>x.v.interest);
+  const interest=rated.length?rated.reduce((s,x)=>s+Number(x.v.interest),0)/rated.length:null;
+  const crew=votes.filter(x=>x.v.join==='yes'||x.v.join==='maybe');
+  const joinYes=votes.filter(x=>x.v.join==='yes').length;
+  const eligible=all.cov>=.7&&econ.cov>=.6&&fit.cov>=.6;
+  const combined=eligible?.4*econ.score+.3*fit.score+.3*val.score:null;
+  let cp=0;cp+=all.cov>=.8?2:all.cov>=.5?1:0;cp+=cnt.val>=2?2:cnt.val>=1?1:0;cp+=dc>=.7?1:0;
+  const conf=cp>=4?'high':cp>=2?'med':'low';
+  const missing=CRIT.filter(c=>eff[c.id].v==null).map(c=>c.name.replace(/ \(.*\)/,''));
+  const whyNot=eligible?'':`برای رتبه‌بندی دست‌کم ۷۰٪ وزن معیارها (و ۶۰٪ هر شاخص) باید امتیاز داشته باشد؛ اکنون ${fa(all.cov*100)}٪ است. نیازمند بررسی: ${missing.join('، ')||'—'}`;
+  let stage;
+  if(idea.archived)stage='archived';
+  else if(['validating','paused','launched'].includes(idea.status))stage=idea.status;
+  else if(all.cov<.6)stage='insufficient';
+  else if(eligible&&econ.score>=60&&fit.score>=50)stage='ready';
+  else stage='evaluating';
+  const notes=[];
+  const known=CRIT.filter(c=>eff[c.id].v!=null).sort((a,b)=>eff[b.id].v-eff[a.id].v);
+  if(known.length){const t=known[0];notes.push(`قوی‌ترین معیار: ${t.name.replace(/ \(.*\)/,'')} (${fa(eff[t.id].v,1)})`);
+    const w=known[known.length-1];if(known.length>1&&eff[w.id].v<5)notes.push(`ضعیف‌ترین معیار: ${w.name.replace(/ \(.*\)/,'')} (${fa(eff[w.id].v,1)})`)}
+  const miss=CRIT.length-known.length; if(miss)notes.push(`${fa(miss)} معیار نیازمند بررسی است`);
+  notes.push(cnt.val?`${fa(cnt.val)} شاهد معتبر ثبت شده`:'هنوز شاهد معتبری از مشتری ثبت نشده');
+  return {idea,eff,econ,fit,all,val,interest,nRated:rated.length,crew:crew.map(x=>x.mk),joinYes,combined,stage,notes,dc,eligible,conf,src,missing,whyNot};
+}
+function ctxNow(){return {members:S.members,priv:S.members_private,votes:S.votes,evals:S.evals,weights:weights()}}
+const normIdea=(i,id)=>{const o=Object.assign({},i,{id});
+  if(o.geo==null&&o.region)o.geo=o.region;
+  if(!o.industry&&o.cat&&LCATS[o.cat])o.industry=LCATS[o.cat];
+  if(!o.solution&&o.desc)o.solution=o.desc;
+  return o};
+const ideasList=()=>Object.entries(S.ideas).map(([id,i])=>normIdea(i,id));
+const ideaOf=id=>S.ideas[id]?normIdea(S.ideas[id],id):null;
+function computeAll(){const c=ctxNow();return ideasList().map(i=>computeIdea(i,c))}
+window.RadarCore={computeIdea,autoScores,indexOf,CRIT,DEFW,dataCompleteness,crewOf};
+
+/* labels for scores */
+function band(v,hi=70,mid=45){return v==null?'na':v>=hi?'good':v>=mid?'warn':'bad'}
+function bandTag(kind,scale100){ // returns tag html for an index/score
+  const map={good:['قوی','good','check'],warn:['متوسط','warn','alert'],bad:['ضعیف','bad','alert'],na:['نیازمند بررسی','na','info']};
+  const m=map[kind];return `<span class="tag t-${m[1]}">${ico(m[2])}${m[0]}</span>`;
+}
+const critBand=v=>band(v==null?null:v*10,70,40);
+function idxCell(ix,showCov=true){
+  if(ix.score==null||ix.cov<.5)return `<div class="idx"><span class="tag t-na">${ico('info')}نیازمند بررسی</span>${ix.cov>0?`<small>${fa(ix.cov*100)}٪ داده</small>`:''}</div>`;
+  return `<div class="idx"><b>${fa(ix.score)}</b>${bandTag(band(ix.score))}${showCov&&ix.cov<.8?`<small>بر پایه‌ی ${fa(ix.cov*100)}٪ داده</small>`:''}</div>`;
+}
+function valCell(v){const k=v.score>=60?'good':v.score>=25?'warn':'bad';const lbl=k==='good'?'قوی':k==='warn'?'در حال شکل‌گیری':'ضعیف';
+  return `<div class="idx"><b>${fa(v.score)}</b><span class="tag t-${k}">${ico(k==='good'?'check':'alert')}${lbl}</span><small>${fa(v.cnt.val)} معتبر · ${fa(v.cnt.init)} اولیه · ${fa(v.cnt.hyp)} فرضیه</small></div>`}
+const STAGE={insufficient:['اطلاعات ناکافی','na','info'],evaluating:['در حال ارزیابی','warn','scale'],ready:['آماده‌ی اعتبارسنجی','good','check'],validating:['در حال اعتبارسنجی','info','flask'],paused:['متوقف','na','alert'],launched:['راه‌اندازی‌شده','good','check'],archived:['آرشیو','na','archive']};
+const stageTag=s=>{const m=STAGE[s];return `<span class="tag t-${m[1]}">${ico(m[2])}${m[0]}</span>`};
+const confTag=c=>{const m=CONFL[c];return `<span class="tag t-${m[1]}">${ico(m[2])}سطح اطمینان ${m[0]}</span>`};
+const srcTxt=r=>`${fa(r.src.manual)} قضاوت دستی · ${fa(r.src.auto)} محاسبه‌شده · ${fa(r.src.missing)} نیازمند بررسی`;
+
+/* ================= storage layer ================= */
+const COLS=['members','ideas','evals','votes','tests','config'];
+const L={get(c){try{return JSON.parse(localStorage.getItem('radar2:'+c)||'{}')}catch(e){return {}}},put(c,o){try{localStorage.setItem('radar2:'+c,JSON.stringify(o))}catch(e){throw {code:'quota_exceeded'}}}};
+async function dbSet(col,id,data){
+  data=clone(data);
+  if(ENV.mode==='local'){const o=L.get(col);o[id]=data;L.put(col,o);S[col][id]=data;return}
+  await ENV.db.doc(col+'/'+id).set(data);
+}
+async function dbDel(col,id){
+  if(ENV.mode==='local'){const o=L.get(col);delete o[id];L.put(col,o);delete S[col][id];return}
+  await ENV.db.doc(col+'/'+id).delete();
+}
+function errMsg(e){const c=e&&e.code;
+  if(c==='invalid_argument')return 'دسترسی نوشتن ندارید. از مالک صفحه بخواهید سطح شما را «Contributor» کند.';
+  if(c==='quota_exceeded')return 'ظرفیت ذخیره‌سازی پر شده است. چند مورد قدیمی را حذف کنید.';
+  if(c==='revoked')return 'دسترسی شما به این صفحه تغییر کرده است. صفحه را دوباره باز کنید.';
+  return 'ارتباط با ذخیره‌سازی برقرار نشد. دوباره تلاش کنید.';}
+let saveClear=null;
+function renderSave(){
+  const b=$('#savebox'),s=UI.save;b.className='savebox'+(s.st==='saved'?' ok':s.st==='error'?' err':'');
+  b.innerHTML=s.st==='saving'?`${ico('spin','spin')}در حال ذخیره…`:s.st==='saved'?`${ico('check')}ذخیره شد`:s.st==='error'?`${ico('alert')}خطا در ذخیره‌سازی: ${esc(s.msg)}`:ENV.mode==='local'?`${ico('info')}ذخیره‌ی محلی`:'';
+}
+async function persist(fn){
+  clearTimeout(saveClear);UI.save={st:'saving'};renderSave();
+  try{await fn();UI.save={st:'saved'};renderSave();saveClear=setTimeout(()=>{if(UI.save.st==='saved'){UI.save={st:'idle'};renderSave()}},3500);return true}
+  catch(e){UI.save={st:'error',msg:errMsg(e)};renderSave();return false}
+}
+
+/* ================= rendering infra ================= */
+let rT=null;
+function schedule(){
+  clearTimeout(rT);rT=setTimeout(()=>{
+    const a=document.activeElement;
+    if(a&&a.closest&&a.closest('#main')&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&UI.draft){UI.pending=true;return}
+    render();},40);
+}
+document.addEventListener('focusout',()=>{if(UI.pending){UI.pending=false;setTimeout(()=>{const a=document.activeElement;if(!(a&&a.closest&&a.closest('#main')&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))render()},60)}});
+function go(view,o={}){
+  if(UI.dirty&&UI.draft&&(o.force!==true)&&view!==UI.view+'~'){}
+  Object.assign(UI,{view,id:null,tab:null,sec:'basic',draft:null,errors:{},dirty:false,evalDraft:null,testDraft:null,weightsDraft:null},o);
+  render();window.scrollTo(0,0);
+  try{sessionStorage.setItem('radar2:view',view)}catch(e){}
+}
+async function leaveGuard(){
+  if(!(UI.dirty&&UI.draft))return true;
+  return ask({title:'تغییرات ذخیره‌نشده',msg:'اگر خارج شوید، تغییرات این فرم از بین می‌رود.',ok:'خروج بدون ذخیره',danger:true});
+}
+function ask({title,msg,ok='تأیید',danger=false}){
+  return new Promise(res=>{
+    const d=$('#dlg');
+    d.innerHTML=`<div class="ov"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dt"><h3 id="dt">${esc(title)}</h3><p>${esc(msg)}</p><div class="bar"><button class="btn ${danger?'danger':'primary'}" data-d="ok">${esc(ok)}</button><button class="btn" data-d="no" id="dno">لغو</button></div></div></div>`;
+    const done=v=>{d.innerHTML='';document.removeEventListener('keydown',kd);res(v)};
+    const kd=e=>{if(e.key==='Escape')done(false)};
+    document.addEventListener('keydown',kd);
+    d.querySelector('[data-d=ok]').onclick=()=>done(true);d.querySelector('[data-d=no]').onclick=()=>done(false);
+    d.querySelector('#dno').focus();
+  });
+}
+
+/* form builders */
+const fid=p=>'f_'+p.replace(/\W/g,'_');
+const errOf=p=>UI.errors[p]?`<div class="err" role="alert">${ico('alert')}${esc(UI.errors[p])}</div>`:'';
+const fld=(label,inner,{req=false,hint='',path='',group=false}={})=>`<div class="fld ${UI.errors[path]?'has-err':''}">${group?`<span class="lbl">${label}${req?'<span class="req" title="ضروری">*</span>':'<span class="opt">اختیاری</span>'}</span>`:`<label class="lbl" for="${fid(path)}">${label}${req?'<span class="req" title="ضروری">*</span>':'<span class="opt">اختیاری</span>'}</label>`}${inner}${hint?`<p class="hint">${hint}</p>`:''}${errOf(path)}</div>`;
+const inp=(p,{ph='',num=false,type='text'}={})=>{const v=getPath(UI.draft,p);return `<input id="${fid(p)}" class="in" type="${type}" ${num?'inputmode="decimal" data-t="num"':''} ${type==='date'?'dir="ltr"':''} data-b="${p}" value="${esc(v==null||(typeof v==='number'&&isNaN(v))?'':v)}" placeholder="${esc(ph)}" ${UI.errors[p]?'aria-invalid="true"':''}>`};
+const txa=(p,ph='',rows=3)=>`<textarea id="${fid(p)}" class="in" rows="${rows}" data-b="${p}" placeholder="${esc(ph)}">${esc(getPath(UI.draft,p)||'')}</textarea>`;
+const sel=(p,opts,blank='انتخاب کنید')=>`<select id="${fid(p)}" class="in" data-b="${p}">${blank?`<option value="">${blank}</option>`:''}${opts.map(o=>`<option value="${esc(o[0])}" ${String(getPath(UI.draft,p))===String(o[0])?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`;
+const segb=(p,opts,multi=false,num=false)=>{const cur=getPath(UI.draft,p);return `<div class="seg ${num?'num':''}" role="group" data-p="${p}">${opts.map(o=>{const on=multi?(cur||[]).includes(o[0]):String(cur)===String(o[0]);return `<button type="button" data-act="${multi?'tog':'pick'}" data-b="${p}" data-v="${esc(o[0])}" aria-pressed="${on}">${esc(o[1])}</button>`}).join('')}</div>`};
+document.addEventListener('input',e=>{const t=e.target.closest&&e.target.closest('[data-b]');if(!t||t.tagName==='BUTTON'||!UI.draft)return;
+  let v=t.value;if(t.dataset.t==='num'){const n=toNum(v);v=(v===''?null:n)}
+  setPath(UI.draft,t.dataset.b,v);UI.dirty=true;
+  if(UI.errors[t.dataset.b]){delete UI.errors[t.dataset.b];const f=t.closest('.fld');if(f){f.classList.remove('has-err');const er=f.querySelector('.err');if(er)er.remove()}}});
+
+/* ================= shell ================= */
+function renderShell(){
+  const nb=(cls)=>NAV.map(([k,l,ic])=>`<button type="button" data-nav="${k}" ${UI.view===k?'aria-current="page"':''}>${ico(ic)}<span>${cls?l.replace('اعضا و پروفایل‌ها','اعضا').replace('ایده‌های کسب‌وکار','ایده‌ها').replace('ارزیابی و مقایسه','ارزیابی').replace('برنامه اعتبارسنجی','اعتبارسنجی').replace('تنظیمات و خروجی داده‌ها','تنظیمات'):l}</span></button>`).join('');
+  $('#sidenav').innerHTML=nb(false);$('#tabbar').innerHTML=nb(true);
+  $('#pageTitle').textContent=PAGE_TITLE[UI.view]||'';
+  $('#who').innerHTML=`<span>${ENV.mode==='local'?'حالت محلی (فقط این مرورگر)':ENV.admin?'نقش شما: مدیر':ENV.canWrite?'نقش شما: مشارکت‌کننده':'نقش شما: فقط مشاهده'}</span>`;
+  const bn=[];
+  if(ENV.mode==='local')bn.push(`<div class="note info">${ico('info')}<span>داده‌ها فقط در همین مرورگر ذخیره می‌شوند و با اعضای دیگر هم‌رسانی نمی‌شوند. برای کار گروهی، صفحه را از طرف مالک به اشتراک بگذارید و سطح اعضا را «Contributor» کنید.</span></div>`);
+  else if(!ENV.canWrite)bn.push(`<div class="note">${ico('lock')}<span>سطح دسترسی شما فقط مشاهده است. برای ثبت اطلاعات از مالک صفحه بخواهید سطح شما را «Contributor» کند.</span></div>`);
+  $('#banner').innerHTML=bn.join('');
+}
+function render(){
+  renderShell();renderSave();
+  const m=$('#main');
+  if(!UI.ready){m.innerHTML='<div class="empty">در حال بارگذاری…</div>';return}
+  const V={dash:vDash,members:vMembers,ideas:vIdeas,eval:vEval,valid:vValid,settings:vSettings}[UI.view]||vDash;
+  m.innerHTML=V();
+  $$('textarea.in',m).forEach(t=>{t.style.height='auto';});
+}
+
+/* ================= DASHBOARD ================= */
+function sampleBtn(){return ENV.canWrite?`<button class="btn" data-act="sample">افزودن داده‌ی نمونه برای آشنایی</button>`:''}
+function vDash(){
+  const R=computeAll(), act=R.filter(r=>!r.idea.archived), mem=Object.values(S.members);
+  const cnt=s=>act.filter(r=>r.stage===s).length;
+  const tiles=[['اعضای ثبت‌شده',mem.length,''],['ایده‌های ثبت‌شده',act.length,''],['در حال ارزیابی',cnt('evaluating'),''],['آماده‌ی اعتبارسنجی',cnt('ready'),''],['اطلاعات ناکافی',cnt('insufficient'),cnt('insufficient')?'attn':'']];
+  const legN=legacyPending();
+  const legH=legN?`<div class="note info">${ico('info')}<span>داده‌های نسخه‌ی قبلی (${fa(legN.profiles)} پروفایل، ${fa(legN.ratings)} فهرست رأی، ${fa(legN.analysis)} تحلیل) هنوز منتقل نشده‌اند. چیزی حذف نمی‌شود. <button class="link" data-nav="settings">مرور و انتقال</button></span></div>`:'';
+  const tilesH=legH+`<div class="tiles">${tiles.map(t=>`<div class="tile ${t[2]}"><b>${fa(t[1])}</b><span>${t[0]}</span></div>`).join('')}</div>`;
+  if(!mem.length&&!act.length){
+    return `${tilesH}<div class="panel"><h2>شروع کار</h2><p class="hint">هنوز چیزی ثبت نشده است. این سه قدم شما را به اولین فهرست اولویت‌بندی می‌رساند.</p>
+      <div class="grid g3">
+       <div class="rowitem"><b>۱. عضو اضافه کنید</b><span class="hint">مهارت، وقت و سرمایه‌ی هر نفر را ثبت کنید.</span><button class="btn primary" data-nav="members">رفتن به اعضا</button></div>
+       <div class="rowitem"><b>۲. ایده ثبت کنید</b><span class="hint">مسئله، مشتری هدف و فرضیه‌های اصلی هر ایده را بنویسید.</span><button class="btn primary" data-nav="ideas">رفتن به ایده‌ها</button></div>
+       <div class="rowitem"><b>۳. ارزیابی کنید</b><span class="hint">به معیارها امتیاز بدهید و ایده‌ها را مقایسه کنید.</span><button class="btn primary" data-nav="eval">رفتن به ارزیابی</button></div>
+      </div><div class="bar">${sampleBtn()}<span class="hint">داده‌ی نمونه با برچسب «نمونه» مشخص می‌شود و از تنظیمات قابل حذف است.</span></div></div>`;
+  }
+  const opp=R.filter(r=>!r.idea.archived&&r.eligible).sort((a,b)=>b.combined-a.combined).slice(0,3);
+  const oppH=opp.length?`<div class="cards">${opp.map((r,k)=>`<div class="opp"><span class="rank">رتبه‌ی ${fa(k+1)} · ${stageTag(r.stage)} ${confTag(r.conf)}</span>
+     <h3><button class="link" data-act="openIdea" data-id="${esc(r.idea.id)}">${esc(r.idea.title)}</button></h3>
+     <div class="mini"><div>اقتصادی<b>${fa(r.econ.score)}</b></div><div>تناسب<b>${fa(r.fit.score)}</b></div><div>اعتبارسنجی<b>${fa(r.val.score)}</b></div></div>
+     <p class="hint">${r.notes.map(esc).join(' · ')}</p></div>`).join('')}</div>
+     <p class="hint">ترتیب بر پایه‌ی ۴۰٪ جذابیت اقتصادی، ۳۰٪ تناسب با گروه و ۳۰٪ اعتبارسنجی است. علاقه‌ی اعضا در این ترتیب نیست. این فقط پیشنهاد اولیه برای تصمیم‌گیری است؛ نه تأیید ایده و نه پیش‌بینی موفقیت.</p>`
+    :`<div class="empty"><b>هنوز ایده‌ای برای پیشنهاد آماده نیست</b><span>برای جلوگیری از رتبه‌بندی بدون پشتوانه، یک ایده وقتی پیشنهاد می‌شود که دست‌کم ۷۰٪ وزن معیارها (و ۶۰٪ هر یک از دو شاخص اقتصادی و تناسب) امتیاز داشته باشد.</span>${act.length?`<button class="btn primary" data-nav="eval">ارزیابی ایده‌ها</button>`:`<button class="btn primary" data-nav="ideas">ثبت اولین ایده</button>`}</div>`;
+  const hours=mem.reduce((s,m)=>s+(Number(m.hoursPerWeek)||0),0), alloc=allocatedAll();
+  const todo=[];
+  if(cnt('insufficient'))todo.push(`${fa(cnt('insufficient'))} ایده اطلاعات کافی برای ارزیابی ندارد`);
+  const noProf=mem.filter(m=>!m.hoursPerWeek&&m.hoursPerWeek!==0).length; if(noProf)todo.push(`${fa(noProf)} عضو ساعت هفتگی خود را ثبت نکرده است`);
+  const noVote=act.filter(r=>!r.nRated).length; if(noVote)todo.push(`${fa(noVote)} ایده هنوز از هیچ عضوی امتیاز علاقه نگرفته است`);
+  const late=Object.values(S.tests).filter(t=>overdue(t)).length; if(late)todo.push(`${fa(late)} آزمون اعتبارسنجی از موعد گذشته است`);
+  const nv=act.filter(r=>r.val.cnt.val===0).length; if(nv&&act.length)todo.push(`${fa(nv)} ایده هنوز شاهد معتبر از مشتری ندارد`);
+  const pts=R.filter(r=>!r.idea.archived&&r.econ.score!=null&&r.fit.score!=null);
+  return `${tilesH}
+  <div class="panel"><div class="ph"><h2>فرصت‌های پیشنهادی</h2><button class="btn sm" data-nav="eval">همه‌ی ایده‌ها</button></div>${oppH}</div>
+  <div class="grid g2">
+   <div class="panel"><h2>اقدام‌های بعدی</h2>${todo.length?`<ul style="margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px">${todo.map(t=>`<li>${t}</li>`).join('')}</ul>`:`<p class="hint">همه‌چیز به‌روز است.</p>`}</div>
+   <div class="panel"><h2>ظرفیت زمانی گروه</h2>${mem.length?`<div class="mini"><div>ساعت هفتگی کل<b>${fa(hours)}</b></div><div>تعهد‌شده<b>${fa(alloc)}</b></div><div>آزاد<b>${fa(Math.max(0,hours-alloc))}</b></div></div><div class="meter" role="img" aria-label="${fa(hours?alloc/hours*100:0)} درصد ظرفیت تعهد شده"><i style="width:${hours?Math.min(100,alloc/hours*100):0}%"></i></div><p class="hint">تعهد‌شده یعنی جمع ساعاتی که اعضا در تب «علاقه و مشارکت» ایده‌ها اعلام کرده‌اند.</p>`:`<p class="hint">بعد از ثبت اعضا نمایش داده می‌شود.</p>`}</div>
+  </div>
+  ${pts.length?`<div class="panel"><h2>نقشه‌ی جذابیت اقتصادی و تناسب</h2><p class="hint">هر عدد شماره‌ی یک ایده در فهرست زیر نمودار است. ایده‌های بالا و راست هم از نظر بازار و هم از نظر توان گروه بهترند. اندازه‌ی نقطه قوت شواهد را نشان می‌دهد.</p>${scatter(pts)}</div>`:''}`;
+}
+function scatter(rows){
+  const W=380,H=300,Lm=34,B=30,T=16,Rm=14,pw=W-Lm-Rm,ph=H-T-B,x=v=>Lm+v/100*pw,y=v=>T+(1-v/100)*ph;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="نقشه‌ی تناسب با گروه در برابر جذابیت اقتصادی" style="max-width:520px;width:100%;height:auto">
+   <rect x="${Lm}" y="${T}" width="${pw}" height="${ph}" fill="none" stroke="var(--line)"/>
+   <line x1="${x(50)}" y1="${T}" x2="${x(50)}" y2="${T+ph}" stroke="var(--line)" stroke-dasharray="3 3"/><line x1="${Lm}" y1="${y(50)}" x2="${Lm+pw}" y2="${y(50)}" stroke="var(--line)" stroke-dasharray="3 3"/>
+   <text x="${Lm+pw/2}" y="${H-6}" text-anchor="middle">تناسب با گروه ←</text><text x="9" y="${T+ph/2}" text-anchor="middle" transform="rotate(-90 9 ${T+ph/2})">جذابیت اقتصادی ←</text>
+   ${[0,50,100].map(v=>`<text x="${x(v)}" y="${T+ph+12}" text-anchor="middle">${fa(v)}</text><text x="${Lm-5}" y="${y(v)+3}" text-anchor="end">${fa(v)}</text>`).join('')}
+   ${rows.map((r,k)=>`<g><title>${esc(r.idea.title)}</title><circle class="dot" cx="${x(r.fit.score)}" cy="${y(r.econ.score)}" r="${8+r.val.score/100*6}"/><text class="dn" x="${x(r.fit.score)}" y="${y(r.econ.score)+3}" text-anchor="middle">${fa(k+1)}</text></g>`).join('')}</svg>
+   <div class="legendl">${rows.map((r,k)=>`<span><b>${fa(k+1)}</b> ${esc(r.idea.title)}</span>`).join('')}</div>`;
+}
+function allocatedAll(){return Object.keys(S.members).reduce((s,k)=>s+allocatedOf(k),0)}
+function allocatedOf(mk){let s=0;Object.entries(((S.votes[mk]||{}).votes)||{}).forEach(([iid,v])=>{if(S.ideas[iid]&&v.join==='yes')s+=Number(v.hours)||0});return s}
+
+/* ================= MEMBERS ================= */
+const memberPct=(m,p)=>{const f=[m.name,m.jobTitle,m.jobStatus,m.hoursPerWeek,(m.teamRoles||[]).length,(m.skills||[]).length,(m.projects||[]).length,m.industries,m.interests,m.network,m.clientAccess];let n=f.filter(v=>v!=null&&v!==''&&v!==0&&v!==false).length,t=f.length;
+  if(p){const g=[p.capital,p.maxLoss,p.risk,p.horizon,p.quit,p.constraints];n+=g.filter(v=>v!=null&&v!=='').length;t+=g.length}return n/t};
+function vMembers(){
+  if(UI.id==='new'||(UI.id&&UI.draft))return vMemberForm();
+  if(UI.id)return vMemberView(UI.id);
+  const q=norm(UI.q), list=Object.entries(S.members).map(([id,m])=>({id,...m})).filter(m=>!q||norm(m.name+' '+(m.jobTitle||'')+' '+(m.skills||[]).map(s=>s.name).join(' ')).includes(q)).sort((a,b)=>String(a.name).localeCompare(String(b.name),'fa'));
+  const mine=S.members[myKey()];
+  const rows=list.map(m=>{const hrs=Number(m.hoursPerWeek)||0,al=allocatedOf(m.id),free=hrs?Math.max(0,hrs-al):0,pct=hrs?Math.min(100,al/hrs*100):0;
+    return `<tr><td class="first name" data-l="نام"><button class="link" data-act="openMember" data-id="${esc(m.id)}">${esc(m.name)}</button>${m.sample?' <span class="tag t-na sample">نمونه</span>':''}${m.stub?' <span class="tag t-warn sample">پروفایل ناقص</span>':''}<small>${esc(m.jobTitle||'')}</small></td>
+     <td data-l="وضعیت شغلی">${esc(lab(JOB,m.jobStatus)||'—')}</td>
+     <td class="num" data-l="ساعت در هفته">${fa(m.hoursPerWeek)}</td>
+     <td class="num" data-l="تعهد‌شده">${fa(al)}</td>
+     <td data-l="ظرفیت آزاد"><div style="min-width:110px"><span class="num">${hrs?fa(100-pct)+'٪ · '+fa(free)+' ساعت':'نیازمند بررسی'}</span><div class="meter ${pct>100?'bad':''}"><i style="width:${pct}%"></i></div></div></td>
+     <td data-l="مهارت‌ها">${(m.skills||[]).slice(0,3).map(s=>`<span class="chip">${esc(s.name)}</span>`).join('')||'—'}</td>
+     <td class="acts"><button class="btn sm" data-act="openMember" data-id="${esc(m.id)}">مشاهده</button> ${canEditMember(m.id)?`<button class="btn sm" data-act="editMember" data-id="${esc(m.id)}">${ico('edit')}ویرایش</button>`:''}</td></tr>`}).join('');
+  return `<div class="panel"><div class="ph"><h2>اعضا (${fa(list.length)})</h2><div class="bar">
+    <input class="in" id="q" type="search" placeholder="جست‌وجوی نام یا مهارت" value="${esc(UI.q)}" aria-label="جست‌وجو" style="width:220px">
+    ${ENV.canWrite&&!mine?`<button class="btn" data-act="newMine">پروفایل من</button>`:''}
+    ${ENV.admin&&ENV.canWrite?`<button class="btn primary" data-act="newMember">${ico('plus')}عضو جدید</button>`:''}</div></div>
+    ${list.length?`<div class="tblw"><table class="tbl stack"><thead><tr><th>نام</th><th>وضعیت شغلی</th><th>ساعت در هفته</th><th>تعهد‌شده</th><th>ظرفیت آزاد</th><th>مهارت‌ها</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+     :`<div class="empty"><b>${Object.keys(S.members).length?'عضوی با این جست‌وجو پیدا نشد':'هنوز عضوی ثبت نشده'}</b><span>${ENV.canWrite?'هر عضو پروفایل مستقل دارد. مالی و تماس هر نفر فقط برای خودش و مدیر دیده می‌شود.':'ثبت عضو نیاز به سطح دسترسی بالاتر دارد.'}</span>${ENV.canWrite&&!Object.keys(S.members).length?`<div class="bar">${ENV.admin?`<button class="btn primary" data-act="newMember">افزودن عضو</button>`:`<button class="btn primary" data-act="newMine">ساخت پروفایل من</button>`}${sampleBtn()}</div>`:''}</div>`}
+    ${!ENV.admin&&ENV.mode!=='local'?`<p class="hint">${ico('lock')} اطلاعات مالی و تماس اعضا فقط برای مدیر و خود فرد نمایش داده می‌شود.</p>`:''}</div>`;
+}
+function vMemberView(id){
+  const m=S.members[id];if(!m)return `<div class="empty">عضو پیدا نشد.<button class="btn" data-act="backList">بازگشت</button></div>`;
+  const p=S.members_private[id], canP=ENV.admin||id===myKey();
+  const kv=(k,v)=>v==null||v===''||(Array.isArray(v)&&!v.length)?'':`<dt>${k}</dt><dd>${v}</dd>`;
+  const al=allocatedOf(id), hrs=Number(m.hoursPerWeek)||0;
+  const votes=Object.entries(((S.votes[id]||{}).votes)||{}).filter(([iid,v])=>S.ideas[iid]&&(v.join||v.interest));
+  return `<div class="bar"><button class="btn sm" data-act="backList">${ico('back')}بازگشت</button></div>
+  <div class="panel"><div class="ph"><h2>${esc(m.name)} ${m.sample?'<span class="tag t-na sample">نمونه</span>':''}</h2><div class="bar">${canEditMember(id)?`<button class="btn" data-act="editMember" data-id="${esc(id)}">${ico('edit')}ویرایش</button><button class="btn danger" data-act="delMember" data-id="${esc(id)}">${ico('trash')}حذف</button>`:''}</div></div>
+   <div class="mini"><div>ساعت در هفته<b>${fa(m.hoursPerWeek)}</b></div><div>تعهد‌شده<b>${fa(al)}</b></div><div>آزاد<b>${hrs?fa(Math.max(0,hrs-al)):'—'}</b></div></div>
+   <p class="hint">کامل‌بودن پروفایل: ${fa(memberPct(m,canP?p:null)*100)}٪</p>
+   <dl class="kv">${kv('عنوان شغلی',esc(m.jobTitle))}${kv('وضعیت شغلی',esc(lab(JOB,m.jobStatus)))}${kv('نقش موردعلاقه در تیم',(m.teamRoles||[]).map(r=>`<span class="chip">${esc(lab(TEAMROLE,r))}</span>`).join(''))}
+   ${kv('مهارت‌ها',(m.skills||[]).map(s=>`<div><b>${esc(s.name)}</b> · ${s.level?esc(lab(LEVELS,s.level)):'سطح مشخص نشده'}${s.evidence?' · شاهد: '+esc(s.evidence):' · <span class="hint">شاهد تجربه ثبت نشده</span>'}</div>`).join(''))}
+   ${kv('پروژه‌های انجام‌شده',(m.projects||[]).map(s=>`<div><b>${esc(s.title)}</b>${s.desc?' · '+esc(s.desc):''}${s.result?' · نتیجه: '+esc(s.result):''}</div>`).join(''))}
+   ${kv('مهارت‌های نسخه‌ی قبلی (بدون سطح)',esc(m.legacy&&m.legacy.skillsText))}${kv('حوزه‌های صنعتی',tags(m.industries).map(x=>`<span class="chip">${esc(x)}</span>`).join(''))}${kv('سابقه‌ی کاری',esc(m.workHistory))}
+   ${kv('علاقه‌مندی‌ها',tags(m.interests).map(x=>`<span class="chip">${esc(x)}</span>`).join(''))}
+   ${kv('ارتباطات',esc(m.network))}${kv('دسترسی به مشتری بالقوه',esc(lab(CLIENT,m.clientAccess)))}</dl></div>
+  <div class="panel"><div class="ph"><h2>منابع، ریسک و محدودیت‌ها</h2><span class="tag t-info">${ico('lock')}خصوصی</span></div>
+   ${canP?(p?`<dl class="kv">${kv('سرمایه‌ی قابل‌اختصاص',p.capital!=null?fa(p.capital)+' میلیون تومان':'')}${kv('حداکثر زیان قابل‌تحمل',p.maxLoss!=null?fa(p.maxLoss)+' میلیون تومان':'')}${kv('ریسک‌پذیری',p.risk?fa(p.risk)+' از ۵':'')}${kv('افق رسیدن به درآمد',p.horizon?lab(HORIZON,p.horizon):'')}${kv('ترک شغل',lab(QUIT,p.quit))}${kv('محدودیت‌ها',esc(p.constraints))}${kv('تماس',esc(p.contact))}</dl>`:`<p class="hint">هنوز ثبت نشده است.</p>`)
+   :`<div class="lockmsg">${ico('lock')}این بخش فقط برای مدیر و خود فرد قابل مشاهده است.</div>`}</div>
+  <div class="panel"><h2>علاقه و تمایل به مشارکت در ایده‌ها</h2>${votes.length?`<table class="tbl stack"><thead><tr><th>ایده</th><th>علاقه (از ۱۰)</th><th>مشارکت</th><th>ساعت هفتگی</th></tr></thead><tbody>${votes.map(([iid,v])=>`<tr><td class="first name">${esc(S.ideas[iid].title)}</td><td data-l="علاقه" class="num">${fa(v.interest)}</td><td data-l="مشارکت">${esc({yes:'شریک می‌شوم',maybe:'شاید',no:'نه'}[v.join]||'—')}</td><td data-l="ساعت" class="num">${v.join==='yes'?fa(v.hours):'—'}</td></tr>`).join('')}</tbody></table>`:`<p class="hint">هنوز به ایده‌ای رأی نداده است. رأی‌دادن از صفحه‌ی هر ایده و تب «علاقه و مشارکت» انجام می‌شود.</p>`}</div>`;
+}
+const MSECS=[['basic','اطلاعات پایه'],['skills','مهارت‌ها'],['exp','تجربه و سابقه'],['soft','علاقه و ارتباطات'],['res','منابع و ریسک']];
+function blankMember(){return {name:'',jobTitle:'',jobStatus:'',hoursPerWeek:null,teamRoles:[],skills:[],projects:[],industries:'',workHistory:'',interests:'',network:'',clientAccess:'',_p:{capital:null,maxLoss:null,risk:null,horizon:null,quit:'',constraints:'',contact:''}}}
+function vMemberForm(){
+  const sec=UI.sec,isNew=UI.id==='new';
+  let body='';
+  if(sec==='basic')body=`<div class="grid g2">${fld('نام و نام خانوادگی',inp('name'),{req:true,path:'name'})}${fld('عنوان یا تخصص اصلی',inp('jobTitle',{ph:'مثلاً مهندس برق صنعتی'}),{path:'jobTitle'})}</div>
+    ${fld('وضعیت شغلی فعلی',segb('jobStatus',JOB),{group:true,path:'jobStatus'})}
+    ${fld('ساعت قابل‌اختصاص در هفته',inp('hoursPerWeek',{num:true,ph:'مثلاً ۸'}),{req:true,path:'hoursPerWeek',hint:'ساعت واقعی و آزاد بعد از شغل اصلی. برای محاسبه‌ی ظرفیت گروه استفاده می‌شود.'})}
+    ${fld('نقش موردعلاقه در تیم (چند گزینه)',segb('teamRoles',TEAMROLE,true),{group:true,path:'teamRoles'})}`;
+  if(sec==='skills')body=`<p class="hint">مهارت یعنی کاری که می‌توانید انجام دهید. سطح تسلط و شاهد تجربه را جدا ثبت کنید تا ارزیابی قابل اعتماد باشد. مهارتی که سطحش مشخص نشده باشد در محاسبه‌ی خودکار تناسب حساب نمی‌شود.</p>
+    ${UI.draft.legacy&&UI.draft.legacy.skillsText?`<div class="note info">${ico('info')}<span>در نسخه‌ی قبلی نوشته‌اید: «${esc(UI.draft.legacy.skillsText)}». سطح مهارت‌ها در آن نسخه ثبت نمی‌شد.</span><button type="button" class="btn sm" data-act="legacySkills">تبدیل به ردیف مهارت</button></div>`:''}
+    ${(UI.draft.skills||[]).map((s,i)=>`<div class="rowitem"><div class="grid g2">${fld('مهارت',inp(`skills.${i}.name`,{ph:'مثلاً طراحی تأسیسات'}),{path:`skills.${i}.name`})}${fld('سطح تسلط',sel(`skills.${i}.level`,LEVELS.map(l=>[l[0],fa(l[0])+' · '+l[1]]),'سطح مشخص نشده'),{path:`skills.${i}.level`})}</div>${fld('شاهد تجربه',inp(`skills.${i}.evidence`,{ph:'پروژه، سال‌ها تجربه یا مدرک'}),{path:`skills.${i}.evidence`})}<div class="bar"><span></span><button class="btn sm danger" data-act="rmItem" data-list="skills" data-i="${i}">${ico('trash')}حذف مهارت</button></div></div>`).join('')}
+    <div><button class="btn" data-act="addItem" data-list="skills">${ico('plus')}افزودن مهارت</button></div>`;
+  if(sec==='exp')body=`<p class="hint">پروژه‌های واقعی که انجام داده‌اید، نه آنچه دوست دارید انجام دهید.</p>
+    ${(UI.draft.projects||[]).map((s,i)=>`<div class="rowitem">${fld('عنوان پروژه',inp(`projects.${i}.title`),{path:`projects.${i}.title`})}<div class="grid g2">${fld('توضیح کوتاه',txa(`projects.${i}.desc`,'',2),{path:`projects.${i}.desc`})}${fld('نتیجه',txa(`projects.${i}.result`,'مثلاً تحویل شد، ۱۲ میلیون تومان درآمد',2),{path:`projects.${i}.result`})}</div><div class="bar"><span></span><button class="btn sm danger" data-act="rmItem" data-list="projects" data-i="${i}">${ico('trash')}حذف پروژه</button></div></div>`).join('')}
+    <div><button class="btn" data-act="addItem" data-list="projects">${ico('plus')}افزودن پروژه</button></div>
+    ${fld('حوزه‌های صنعتی که در آن کار کرده‌اید',inp('industries',{ph:'با ویرگول جدا کنید: انرژی، ساختمان'}),{path:'industries'})}
+    ${fld('سابقه‌ی کاری',txa('workHistory','شرکت‌ها و نقش‌ها'),{path:'workHistory'})}`;
+  if(sec==='soft')body=`${fld('علاقه‌مندی‌ها',inp('interests',{ph:'با ویرگول جدا کنید. علاقه با مهارت یکی نیست'}),{path:'interests',hint:'چیزهایی که انگیزه می‌دهند، حتی اگر هنوز مهارتش را ندارید.'})}
+    ${fld('شبکه‌ی ارتباطی',txa('network','در چه صنعت‌هایی مشتری، تأمین‌کننده یا آشنای کلیدی دارید؟'),{path:'network'})}
+    ${fld('دسترسی به مشتریان بالقوه',segb('clientAccess',CLIENT),{group:true,path:'clientAccess'})}`;
+  if(sec==='res')body=`<div class="lockmsg">${ico('lock')}این بخش فقط برای شما و مدیر دیده می‌شود.</div>
+    <div class="grid g2">${fld('سرمایه‌ی قابل‌اختصاص (میلیون تومان)',inp('_p.capital',{num:true,ph:'مثلاً ۳۰۰'}),{path:'_p.capital'})}${fld('حداکثر زیان مالی قابل‌تحمل (میلیون تومان)',inp('_p.maxLoss',{num:true}),{path:'_p.maxLoss',hint:'مبلغی که اگر کاملاً از دست برود، زندگی شما را مختل نمی‌کند.'})}</div>
+    ${fld('میزان ریسک‌پذیری (۱ ریسک‌گریز تا ۵ ریسک‌پذیر)',segb('_p.risk',[1,2,3,4,5].map(n=>[n,fa(n)]),false,true),{group:true,path:'_p.risk'})}
+    ${fld('افق زمانی صبر برای درآمد',segb('_p.horizon',HORIZON),{group:true,path:'_p.horizon'})}
+    ${fld('ترک شغل',segb('_p.quit',QUIT),{group:true,path:'_p.quit'})}
+    ${fld('محدودیت‌های شغلی، زمانی یا اجرایی',txa('_p.constraints','مثلاً قرارداد منع رقابت، سفر کاری، بدون حضور روزانه'),{path:'_p.constraints'})}
+    ${fld('راه تماس',inp('_p.contact',{ph:'ایمیل یا شماره'}),{path:'_p.contact'})}`;
+  return `<div class="bar"><button class="btn sm" data-act="cancelForm">${ico('back')}بازگشت</button></div>
+  <div class="panel"><h2>${isNew?'عضو جدید':'ویرایش پروفایل'}</h2>
+   <div class="tabs" role="tablist">${MSECS.map(([k,l])=>`<button role="tab" type="button" data-act="sec" data-v="${k}" aria-selected="${sec===k}">${l}${UI.errors._sec===k||Object.keys(UI.errors).some(e=>secOf(e)===k)?' <span class="req">●</span>':''}</button>`).join('')}</div>
+   <div class="sec">${body}</div></div>
+  <div class="sticky-actions"><button class="btn primary" data-act="saveMember">ذخیره</button><button class="btn" data-act="cancelForm">لغو</button>${!isNew&&canEditMember(UI.id)?`<button class="btn danger" data-act="delMember" data-id="${esc(UI.id)}">${ico('trash')}حذف</button>`:''}${Object.keys(UI.errors).length?`<span class="err">${ico('alert')}چند فیلد نیاز به اصلاح دارد.</span>`:''}</div>`;
+}
+function secOf(path){const f=path.split('.')[0];return {name:'basic',hoursPerWeek:'basic',jobStatus:'basic',skills:'skills',projects:'exp',_p:'res'}[f]||''}
+function validateMember(d){
+  const e={};
+  if(!String(d.name||'').trim())e.name='نام را وارد کنید.';
+  const h=d.hoursPerWeek; if(h==null||h==='')e.hoursPerWeek='ساعت هفتگی را وارد کنید. اگر وقت ندارید، عدد ۰ را بنویسید.';
+  else if(isNaN(h)||h<0||h>80)e.hoursPerWeek='عددی بین ۰ تا ۸۰ وارد کنید.';
+  const p=d._p||{};
+  ['capital','maxLoss'].forEach(k=>{if(p[k]!=null&&p[k]!==''&&(isNaN(p[k])||p[k]<0))e['_p.'+k]='عدد معتبر و غیرمنفی وارد کنید.'});
+  if(!e['_p.capital']&&!e['_p.maxLoss']&&p.capital!=null&&p.maxLoss!=null&&p.maxLoss>p.capital)e['_p.maxLoss']='حداکثر زیان نمی‌تواند از سرمایه‌ی قابل‌اختصاص بیشتر باشد.';
+  (d.skills||[]).forEach((s,i)=>{if(!String(s.name||'').trim()&&(s.evidence||s.level))e[`skills.${i}.name`]='نام مهارت را بنویسید یا ردیف را حذف کنید.'});
+  return e;
+}
+async function saveMember(){
+  const d=UI.draft;d.name=String(d.name||'').trim();
+  UI.errors=validateMember(d);
+  if(Object.keys(UI.errors).length){const first=Object.keys(UI.errors)[0];UI.sec=secOf(first)||UI.sec;render();const el=$('#'+fid(first));if(el)el.focus();return}
+  const id=UI.id==='new'?(UI.mineNew?myKey():newId('m')):UI.id;
+  const p=d._p||{};const pub=clone(d);delete pub._p;
+  pub.skills=(pub.skills||[]).filter(s=>String(s.name||'').trim()).map(s=>({...s,level:Number(s.level)||null}));
+  pub.projects=(pub.projects||[]).filter(s=>String(s.title||'').trim());
+  pub.updatedAt=Date.now();if(!pub.createdAt)pub.createdAt=Date.now();
+  const priv=Object.assign({},p,{updatedAt:Date.now()});
+  const ok=await persist(async()=>{await dbSet('members',id,pub);await dbSet('members_private',id,priv);
+    if(ENV.mode!=='local'){S.members[id]=pub;S.members_private[id]=priv}});
+  if(ok){UI.draft=null;UI.dirty=false;UI.id=id;UI.mineNew=false;render()}
+}
+
+/* ================= IDEAS ================= */
+const ISECS=[['core','مسئله و راه‌حل'],['market','بازار و رقابت'],['res','منابع و زمان'],['mkt','تحلیل بازار ایران'],['ev','شواهد، فرضیات و ریسک']];
+function blankIdea(){return {title:'',problem:'',target:'',solution:'',product:'',revenue:'',industry:'',geo:'',advantage:'',status:'new',capital:null,launchWeeks:null,weeklyHours:null,competitors:'',requiredSkills:'',risks:'',assumptions:[],evidence:[],archived:false,market:{},aiNotes:[]}}
+function vIdeas(){
+  if(UI.id==='new'||(UI.id&&UI.draft&&UI.tab==='edit'))return vIdeaForm();
+  if(UI.id)return vIdeaDetail(UI.id);
+  const q=norm(UI.q);
+  let R=computeAll().filter(r=>(UI.showArch||!r.idea.archived)&&(!UI.stage||r.stage===UI.stage)&&(!q||norm(r.idea.title+' '+(r.idea.industry||'')+' '+(r.idea.problem||'')).includes(q)));
+  const so=UI.sort||'updated';
+  R.sort((a,b)=>so==='title'?String(a.idea.title).localeCompare(String(b.idea.title),'fa'):so==='econ'?(b.econ.score??-1)-(a.econ.score??-1):so==='fit'?(b.fit.score??-1)-(a.fit.score??-1):so==='val'?b.val.score-a.val.score:(b.idea.updatedAt||0)-(a.idea.updatedAt||0));
+  const rows=R.map(r=>`<tr><td class="first name" data-l="ایده"><button class="link" data-act="openIdea" data-id="${esc(r.idea.id)}">${esc(r.idea.title)}</button>${r.idea.sample?' <span class="tag t-na sample">نمونه</span>':''}<small>${esc(r.idea.industry||'صنعت ثبت نشده')}</small></td>
+    <td data-l="مرحله">${stageTag(r.stage)}</td><td data-l="اقتصادی">${idxCell(r.econ)}</td><td data-l="تناسب">${idxCell(r.fit)}</td><td data-l="اعتبارسنجی">${valCell(r.val)}</td>
+    <td data-l="علاقه و مشارکت" class="num">${r.interest!=null?fa(r.interest,1)+' از ۱۰':'بدون رأی'}<small style="display:block;color:var(--muted)">${fa(r.joinYes)} نفر شریک</small></td>
+    <td data-l="کامل‌بودن"><div style="min-width:80px"><span class="num">${fa(r.dc*100)}٪</span><div class="meter ${r.dc<.5?'warn':''}"><i style="width:${r.dc*100}%"></i></div></div></td></tr>`).join('');
+  return `<div class="panel"><div class="ph"><h2>ایده‌ها (${fa(R.length)})</h2><div class="bar">
+   <input class="in" id="q" type="search" placeholder="جست‌وجوی عنوان یا صنعت" value="${esc(UI.q)}" aria-label="جست‌وجو" style="width:200px">
+   <select class="in" id="stageSel" aria-label="فیلتر مرحله" style="width:170px"><option value="">همه‌ی مرحله‌ها</option>${Object.entries(STAGE).filter(x=>x[0]!=='archived').map(([k,v])=>`<option value="${k}" ${UI.stage===k?'selected':''}>${v[0]}</option>`).join('')}</select>
+   <select class="in" id="sortSel" aria-label="مرتب‌سازی" style="width:170px">${[['updated','جدیدترین تغییر'],['title','عنوان'],['econ','شاخص اقتصادی'],['fit','شاخص تناسب'],['val','اعتبارسنجی']].map(([k,l])=>`<option value="${k}" ${(UI.sort||'updated')===k?'selected':''}>مرتب‌سازی: ${l}</option>`).join('')}</select>
+   <label class="bar" style="gap:6px;font-size:13.5px"><input type="checkbox" id="archChk" ${UI.showArch?'checked':''}> نمایش آرشیو</label>
+   ${ENV.canWrite?`<button class="btn primary" data-act="newIdea">${ico('plus')}ایده‌ی جدید</button>`:''}</div></div>
+   ${R.length?`<div class="tblw"><table class="tbl stack"><thead><tr><th>ایده</th><th>مرحله</th><th>اقتصادی</th><th>تناسب</th><th>اعتبارسنجی</th><th>علاقه و مشارکت</th><th>کامل‌بودن</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <p class="hint">علاقه و مشارکت اعضا جدا از جذابیت اقتصادی نمایش داده می‌شود و در امتیاز اقتصادی اثر ندارد.</p>`
+   :`<div class="empty"><b>${Object.keys(S.ideas).length?'ایده‌ای با این فیلتر پیدا نشد':'هنوز ایده‌ای ثبت نشده'}</b><span>برای هر ایده مسئله‌ی مشتری، مشتری هدف و فرضیه‌های اصلی را بنویسید. ثبت ایده مستقل از پروفایل اعضاست.</span>${ENV.canWrite&&!Object.keys(S.ideas).length?`<div class="bar"><button class="btn primary" data-act="newIdea">ثبت اولین ایده</button>${sampleBtn()}</div>`:''}</div>`}</div>`;
+}
+function vIdeaForm(){
+  const sec=UI.sec,isNew=UI.id==='new';let body='';
+  if(sec==='core')body=`${fld('عنوان ایده',inp('title'),{req:true,path:'title'})}${fld('مسئله یا نیاز مشتری',txa('problem','چه دردی دارد و الان چطور حلش می‌کند؟'),{req:true,path:'problem'})}${fld('مشتری هدف',inp('target',{ph:'مثلاً شرکت‌های تولیدی کوچک در شهرک صنعتی'}),{req:true,path:'target'})}
+    ${fld('راه‌حل پیشنهادی',txa('solution'),{path:'solution'})}<div class="grid g2">${fld('محصول یا خدمت',inp('product'),{path:'product'})}${fld('مدل درآمدی',inp('revenue',{ph:'اشتراک ماهانه، فروش پروژه‌ای، کارمزد'}),{path:'revenue'})}</div>`;
+  if(sec==='market')body=`<div class="grid g2">${fld('صنعت',inp('industry'),{path:'industry'})}${fld('بازار جغرافیایی هدف',sel('geo',GEO),{path:'geo'})}</div>
+    ${fld('مزیت رقابتی احتمالی',txa('advantage'),{path:'advantage'})}${fld('رقبای شناخته‌شده',txa('competitors','نام رقبا و تفاوت اصلی'),{path:'competitors'})}
+    ${fld('مهارت‌های موردنیاز',inp('requiredSkills',{ph:'با ویرگول جدا کنید: برق صنعتی، فروش B2B'}),{path:'requiredSkills',hint:'برای محاسبه‌ی خودکار تناسب با مهارت اعضا استفاده می‌شود.'})}`;
+  if(sec==='res')body=`<div class="grid g3">${fld('سرمایه‌ی اولیه‌ی تخمینی (میلیون تومان)',inp('capital',{num:true}),{path:'capital'})}${fld('زمان تا راه‌اندازی (هفته)',inp('launchWeeks',{num:true}),{path:'launchWeeks'})}${fld('زمان هفتگی لازم برای اداره (ساعت)',inp('weeklyHours',{num:true}),{path:'weeklyHours'})}</div>
+    ${fld('وضعیت فعلی',sel('status',ISTATUS,''),{path:'status'})}`;
+  if(sec==='mkt')body=`<div class="note info">${ico('info')}<span>این صفحه به وب یا داده‌ی زنده‌ی بازار دسترسی ندارد و چیزی را خودکار بررسی نمی‌کند. فقط آنچه اعضا وارد می‌کنند ذخیره می‌شود. برای هر مورد نوع اطلاعات، منبع، تاریخ و سطح اطمینان را ثبت کنید. اگر نوع را انتخاب نکنید، «فرضیه» حساب می‌شود و «واقعیت تأییدشده» بدون منبع پذیرفته نمی‌شود.</span></div>`+MKT.map(([k,t,h])=>`<div class="rowitem"><b>${t}</b><span class="hint">${h}</span>${fld('یافته یا برآورد شما',txa(`market.${k}.text`,'',2),{path:`market.${k}.text`})}<div class="grid g3">${fld('نوع اطلاعات',sel(`market.${k}.kind`,KIND,'انتخاب کنید'),{path:`market.${k}.kind`})}${fld('سطح اطمینان',sel(`market.${k}.conf`,CONF,'انتخاب کنید'),{path:`market.${k}.conf`})}${fld('تاریخ اطلاعات',inp(`market.${k}.date`,{type:'date'}),{path:`market.${k}.date`})}</div>${fld('منبع',inp(`market.${k}.source`,{ph:'نام منبع، لینک یا «مصاحبه با ...»'}),{path:`market.${k}.source`})}</div>`).join('');
+  if(sec==='ev')body=`<div class="note info">${ico('info')}<span><b>فرضیه:</b> ${ETYPE_HELP.hyp}. <b>شواهد اولیه:</b> ${ETYPE_HELP.init}. <b>شواهد معتبر:</b> ${ETYPE_HELP.val}.</span></div>
+    <h3 style="margin:0;font-size:15px">فرضیات اصلی</h3>
+    ${(UI.draft.assumptions||[]).map((a,i)=>`<div class="rowitem"><div class="grid g2">${fld('فرض',inp(`assumptions.${i}.text`,{ph:'مثلاً مشتری حاضر است ماهانه ۵ میلیون بدهد'}),{path:`assumptions.${i}.text`})}${fld('وضعیت',sel(`assumptions.${i}.status`,ASTATUS,''),{path:`assumptions.${i}.status`})}</div><div class="bar"><button type="button" class="btn sm" data-act="keyAsm" data-i="${i}" aria-pressed="${a.key?'true':'false'}">${a.key?ico('check')+'مهم‌ترین فرضیه':'انتخاب به‌عنوان مهم‌ترین فرضیه'}</button><button class="btn sm danger" data-act="rmItem" data-list="assumptions" data-i="${i}">${ico('trash')}حذف</button></div></div>`).join('')}
+    <div><button class="btn" data-act="addItem" data-list="assumptions">${ico('plus')}افزودن فرض</button></div>
+    <h3 style="margin:8px 0 0;font-size:15px">شواهد تقاضای بازار</h3>
+    ${(UI.draft.evidence||[]).map((a,i)=>`<div class="rowitem">${fld('شاهد',txa(`evidence.${i}.text`,'چه دیدید یا شنیدید؟',2),{path:`evidence.${i}.text`})}<div class="grid g2">${fld('نوع',sel(`evidence.${i}.type`,ETYPE,''),{path:`evidence.${i}.type`})}${fld('منبع',inp(`evidence.${i}.source`,{ph:'مثلاً مصاحبه با ۵ مدیر کارخانه'}),{path:`evidence.${i}.source`})}</div><div class="bar"><span></span><button class="btn sm danger" data-act="rmItem" data-list="evidence" data-i="${i}">${ico('trash')}حذف</button></div></div>`).join('')}
+    <div><button class="btn" data-act="addItem" data-list="evidence">${ico('plus')}افزودن شاهد</button></div>
+    ${fld('ریسک‌ها و موانع مهم',txa('risks'),{path:'risks'})}`;
+  return `<div class="bar"><button class="btn sm" data-act="cancelForm">${ico('back')}بازگشت</button></div>
+  <div class="panel"><h2>${isNew?'ایده‌ی جدید':'ویرایش ایده'}</h2>
+   <div class="tabs" role="tablist">${ISECS.map(([k,l])=>`<button role="tab" type="button" data-act="sec" data-v="${k}" aria-selected="${sec===k}">${l}${Object.keys(UI.errors).some(e=>isecOf(e)===k)?' <span class="req">●</span>':''}</button>`).join('')}</div>
+   <div class="sec">${body}</div></div>
+  <div class="sticky-actions"><button class="btn primary" data-act="saveIdea">ذخیره</button><button class="btn" data-act="cancelForm">لغو</button>${Object.keys(UI.errors).length?`<span class="err">${ico('alert')}چند فیلد نیاز به اصلاح دارد.</span>`:''}</div>`;
+}
+function isecOf(p){const f=p.split('.')[0];return {market:'mkt',title:'core',problem:'core',target:'core',capital:'res',launchWeeks:'res',weeklyHours:'res',assumptions:'ev',evidence:'ev'}[f]||''}
+function validateIdea(d){
+  const e={};
+  ['title','problem','target'].forEach(k=>{if(!String(d[k]||'').trim())e[k]={title:'عنوان ایده را بنویسید.',problem:'مسئله‌ی مشتری را بنویسید.',target:'مشتری هدف را مشخص کنید.'}[k]});
+  [['capital',1e6,'سرمایه'],['launchWeeks',520,'زمان راه‌اندازی'],['weeklyHours',168,'زمان هفتگی']].forEach(([k,mx,n])=>{const v=d[k];if(v!=null&&v!==''&&(isNaN(v)||v<0||v>mx))e[k]=`${n}: عددی بین ۰ تا ${fa(mx)} وارد کنید.`});
+  (d.evidence||[]).forEach((x,i)=>{if(!String(x.text||'').trim()&&(x.source))e[`evidence.${i}.text`]='متن شاهد را بنویسید یا ردیف را حذف کنید.'});
+  MKT.forEach(([k])=>{const m=(d.market||{})[k];if(!m)return;
+    if(String(m.text||'').trim()&&m.kind==='fact'&&!String(m.source||'').trim())e[`market.${k}.source`]='برای «واقعیت تأییدشده» منبع لازم است.';
+    if(m.date&&!/^\d{4}-\d{2}-\d{2}$/.test(m.date))e[`market.${k}.date`]='تاریخ معتبر وارد کنید.'});
+  return e;
+}
+async function saveIdea(){
+  const d=UI.draft;UI.errors=validateIdea(d);
+  if(Object.keys(UI.errors).length){const first=Object.keys(UI.errors)[0];UI.sec=isecOf(first)||UI.sec;render();const el=$('#'+fid(first));if(el)el.focus();return}
+  const isNew=UI.id==='new',id=isNew?newId('i'):UI.id,o=clone(d);
+  o.title=o.title.trim();o.updatedAt=Date.now();if(!o.createdAt)o.createdAt=Date.now();
+  o.assumptions=(o.assumptions||[]).filter(a=>String(a.text||'').trim()).map(a=>({status:'untested',...a}));
+  o.evidence=(o.evidence||[]).filter(a=>String(a.text||'').trim()).map(a=>({type:'hyp',...a}));
+  o.status=o.status||'new';
+  const mk2={};MKT.forEach(([k])=>{const m=(o.market||{})[k];if(m&&String(m.text||'').trim())mk2[k]={text:m.text.trim(),kind:m.kind||'assumption',conf:m.conf||'',source:String(m.source||'').trim(),date:m.date||''}});o.market=mk2;
+  if(!Array.isArray(o.aiNotes))o.aiNotes=[];
+  ['capital','launchWeeks','weeklyHours'].forEach(k=>{if(o[k]===''||isNaN(o[k]))o[k]=null});
+  if(!o.createdBy)o.createdBy=myKey();
+  const ok=await persist(async()=>{await dbSet('ideas',id,o);if(ENV.mode!=='local')S.ideas[id]=o});
+  if(ok){UI.draft=null;UI.dirty=false;UI.id=id;UI.tab='overview';render()}
+}
+const ITABS=[['overview','مرور'],['edit','ویرایش'],['eval','ارزیابی'],['vote','علاقه و مشارکت'],['plan','برنامه اعتبارسنجی'],['ai','یادداشت‌های هوش مصنوعی']];
+function vIdeaDetail(id){
+  const idea=ideaOf(id);if(!idea)return `<div class="empty">ایده پیدا نشد.<button class="btn" data-act="backList">بازگشت</button></div>`;
+  const tab=UI.tab||'overview', r=computeIdea(idea,ctxNow());
+  const head=`<div class="bar"><button class="btn sm" data-act="backList">${ico('back')}بازگشت</button></div>
+   <div class="panel"><div class="ph"><h2>${esc(idea.title)} ${idea.sample?'<span class="tag t-na sample">نمونه</span>':''}</h2><div class="bar">${stageTag(r.stage)}${ENV.canWrite?`<button class="btn" data-act="editIdea" data-id="${esc(id)}">${ico('edit')}ویرایش</button><button class="btn" data-act="archIdea" data-id="${esc(id)}">${ico('archive')}${idea.archived?'خروج از آرشیو':'آرشیو'}</button><button class="btn danger" data-act="delIdea" data-id="${esc(id)}">${ico('trash')}حذف</button>`:''}</div></div>
+   <div class="grid g3"><div class="rowitem"><b>${GNAME.econ}</b>${idxCell(r.econ)}</div><div class="rowitem"><b>${GNAME.fit}</b>${idxCell(r.fit)}</div><div class="rowitem"><b>${GNAME.val}</b>${valCell(r.val)}</div></div>
+   <div class="tabs" role="tablist">${ITABS.map(([k,l])=>`<button role="tab" type="button" data-act="itab" data-v="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div></div>`;
+  let body='';
+  if(tab==='overview'){
+    const kv=(k,v)=>v==null||v===''?'':`<dt>${k}</dt><dd>${v}</dd>`;
+    const interested=r.crew.map(mk=>esc(S.members[mk].name)).join('، ');
+    body=`<div class="panel"><h2>خلاصه‌ی ارزیابی</h2><p style="margin:0">${r.notes.map(esc).join(' · ')}</p>
+      <div class="bar">${confTag(r.conf)}<span class="hint">منشأ امتیازها: ${srcTxt(r)}</span></div>${r.eligible?'':`<div class="note">${ico('info')}<span>${esc(r.whyNot)}. تا آن زمان این ایده رتبه‌ی قطعی نمی‌گیرد.</span></div>`}
+      <div class="grid g3"><div class="rowitem"><b>علاقه‌ی اعضا</b><span class="num">${r.interest!=null?fa(r.interest,1)+' از ۱۰ (' +fa(r.nRated)+' رأی)':'هنوز رأیی ثبت نشده'}</span></div><div class="rowitem"><b>تمایل به مشارکت</b><span>${fa(r.joinYes)} نفر قطعی${r.crew.length>r.joinYes?` · ${fa(r.crew.length-r.joinYes)} نفر شاید`:''}</span></div><div class="rowitem"><b>کامل‌بودن اطلاعات ایده</b><span class="num">${fa(r.dc*100)}٪ · ${fa(r.all.known)} از ${fa(CRIT.length)} معیار امتیاز دارد</span></div></div>
+      <p class="hint">علاقه و مشارکت اعضا به‌تنهایی نشانه‌ی جذابیت اقتصادی نیست و در امتیاز اقتصادی وارد نمی‌شود.</p></div>
+     <div class="panel"><h2>اطلاعات ایده</h2><dl class="kv">${kv('مسئله',esc(idea.problem))}${kv('مشتری هدف',esc(idea.target))}${kv('راه‌حل',esc(idea.solution))}${kv('محصول یا خدمت',esc(idea.product))}${kv('مدل درآمدی',esc(idea.revenue))}${kv('صنعت',esc(idea.industry))}${kv('بازار هدف',esc(lab(GEO,idea.geo)))}${kv('مزیت رقابتی',esc(idea.advantage))}${kv('رقبا',esc(idea.competitors))}${kv('مهارت‌های موردنیاز',tags(idea.requiredSkills).map(x=>`<span class="chip">${esc(x)}</span>`).join(''))}
+      ${kv('سرمایه‌ی اولیه',idea.capital!=null?fa(idea.capital)+' میلیون تومان':'')}${kv('زمان تا راه‌اندازی',idea.launchWeeks!=null?fa(idea.launchWeeks)+' هفته':'')}${kv('زمان هفتگی لازم',idea.weeklyHours!=null?fa(idea.weeklyHours)+' ساعت':'')}${kv('ریسک‌ها',esc(idea.risks))}${kv('اعضای علاقه‌مند',interested)}${kv('تاریخ ثبت',dateFa(idea.createdAt))}${kv('آخرین به‌روزرسانی',dateFa(idea.updatedAt))}</dl></div>
+     <div class="panel"><h2>فرضیات و شواهد</h2>
+      ${(idea.assumptions||[]).length?`<div><b>فرضیات</b><ul style="margin:6px 0 0;padding-inline-start:20px">${idea.assumptions.map(a=>`<li>${esc(a.text)} <span class="tag t-${a.status==='supported'?'good':a.status==='refuted'?'bad':'na'}">${esc(lab(ASTATUS,a.status))}</span></li>`).join('')}</ul></div>`:`<p class="hint">فرضی ثبت نشده است. بدون فرض روشن نمی‌شود آزمون طراحی کرد.</p>`}
+      ${(idea.evidence||[]).length?`<div><b>شواهد</b><ul style="margin:6px 0 0;padding-inline-start:20px">${idea.evidence.map(a=>`<li>${esc(a.text)} <span class="tag t-${a.type==='val'?'good':a.type==='init'?'warn':'na'}">${esc(lab(ETYPE,a.type))}</span>${a.source?` <span class="hint">(${esc(a.source)})</span>`:''}</li>`).join('')}</ul></div>`:`<p class="hint">شاهدی ثبت نشده است.</p>`}</div>`;
+  }
+  if(tab==='overview')body+=marketPanel(idea);
+  if(tab==='plan')body=vPlan(idea,r);
+  if(tab==='ai')body=vAi(idea);
+  if(tab==='eval')body=vEvalForm(idea,r);
+  if(tab==='vote')body=vVote(idea,r);
+  return head+body;
+}
+function marketPanel(idea){
+  const m=idea.market||{};
+  const rows=MKT.map(([k,t])=>{const x=m[k];
+    if(!x||!x.text)return `<div class="rowitem"><b>${t}</b><span class="tag t-na">${ico('info')}نیازمند بررسی</span></div>`;
+    const kk=x.kind||'assumption',tone={fact:'good',estimate:'warn',assumption:'na',unknown:'na'}[kk];
+    return `<div class="rowitem"><div class="ph"><b>${t}</b><span><span class="tag t-${tone}">${esc(lab(KIND,kk))}</span> ${x.conf?`<span class="tag t-info">${esc(lab(CONF,x.conf))}</span>`:''}</span></div><div style="white-space:pre-wrap">${esc(x.text)}</div><div class="hint">منبع: ${x.source?esc(x.source):'ثبت نشده'}${x.date?' · تاریخ: '+dateFa(x.date):''}</div></div>`}).join('');
+  return `<div class="panel"><h2>تحلیل بازار ایران</h2><p class="hint">این بخش فقط اطلاعاتی است که اعضا وارد کرده‌اند. ابزار داده‌ی زنده‌ی بازار را بررسی نمی‌کند و هیچ آماری را خودش اضافه نمی‌کند.</p><div class="grid g2">${rows}</div></div>`;
+}
+function vPlan(idea,r){
+  const ts=Object.entries(S.tests).filter(([id,t])=>t.ideaId===idea.id).map(([id,t])=>({id,...t}));
+  const key=(idea.assumptions||[]).find(a=>a.key&&a.text);
+  const pass=ts.filter(t=>t.status==='passed').length,fail=ts.filter(t=>t.status==='failed').length;
+  const verdict=pass?`${fa(pass)} آزمون موفق ثبت شده${fail?' و '+fa(fail)+' ناموفق':''}`:fail?`${fa(fail)} آزمون ناموفق ثبت شده`:'هنوز هیچ آزمایش واقعی ثبت نشده';
+  return `<div class="panel"><div class="ph"><h2>برنامه‌ی اعتبارسنجی</h2>${ENV.canWrite?`<button class="btn primary" data-act="newTestFor" data-id="${esc(idea.id)}">${ico('plus')}آزمون جدید</button>`:''}</div>
+   <div class="note ${pass?'info':''}">${ico('info')}<span><b>نتیجه‌ی آزمایش واقعی:</b> ${verdict}. امتیاز بالا به‌تنهایی ایده را «تأییدشده» نمی‌کند؛ فقط نتیجه‌ی واقعی آزمون‌ها و رفتار مشتری اعتبار می‌آورد.</span></div>
+   <div class="rowitem"><b>مهم‌ترین فرضیه‌ای که باید آزمایش شود</b>${key?`<div>${esc(key.text)}</div>`:`<span class="tag t-na">${ico('info')}هنوز انتخاب نشده</span><span class="hint">در تب «ویرایش»، بخش «شواهد، فرضیات و ریسک»، یکی از فرضیات را مهم‌ترین فرضیه علامت بزنید.</span>`}</div>
+   ${ts.length?ts.map(testCard).join(''):`<div class="empty">برای این ایده آزمونی برنامه‌ریزی نشده است.</div>`}</div>`;
+}
+function vAi(idea){
+  const notes=idea.aiNotes||[];
+  return `<div class="panel"><h2>یادداشت‌های هوش مصنوعی</h2>
+   <div class="note">${ico('alert')}<span>این صفحه خودش تحلیل هوش مصنوعی انجام نمی‌دهد. اینجا فقط متنی ثبت می‌شود که شما از GPT یا Claude گرفته‌اید. این یادداشت‌ها «بررسی‌نشده» حساب می‌شوند و روی هیچ امتیازی اثر ندارند.</span></div>
+   ${ENV.canWrite?`<div class="fld"><label class="lbl" for="ai_text">متن پیشنهاد<span class="opt">حداکثر ۵۰۰۰ نویسه</span></label><textarea class="in" id="ai_text" rows="4"></textarea><div id="ai_err"></div></div><div class="bar"><select class="in" id="ai_src" style="width:180px" aria-label="منبع"><option>GPT</option><option>Claude</option><option>سایر</option></select><button class="btn primary" data-act="addAi" data-id="${esc(idea.id)}">ثبت یادداشت</button></div>`:''}
+   ${notes.length?notes.map((n,i)=>`<div class="rowitem"><div class="ph"><span><span class="tag t-na">تولیدشده توسط ${esc(n.source||'هوش مصنوعی')}</span> <span class="tag t-${n.reviewed?'info':'warn'}">${n.reviewed?'بررسی‌شده توسط انسان':'بررسی‌نشده'}</span></span><span class="hint">${dateFa(n.date)}</span></div><div style="white-space:pre-wrap">${esc(n.text)}</div>${ENV.canWrite?`<div class="bar"><button class="btn sm" data-act="revAi" data-id="${esc(idea.id)}" data-i="${i}">${n.reviewed?'علامت «بررسی‌نشده»':'علامت «بررسی‌شد»'}</button><button class="btn sm danger" data-act="delAi" data-id="${esc(idea.id)}" data-i="${i}">${ico('trash')}حذف</button></div>`:''}</div>`).join(''):`<div class="empty">هنوز یادداشتی ثبت نشده است.</div>`}</div>`;
+}
+function vEvalForm(idea,r){
+  const D=UI.evalDraft||(UI.evalDraft=clone(((S.evals[idea.id]||{}).scores)||{}));
+  const W=weights(), auto=autoScores(idea,ctxNow());
+  const group=g=>CRIT.filter(c=>c.g===g).map(c=>{
+    const m=D[c.id]||{}, v=m.v, a=auto[c.id], effv=v!=null?v:(a&&a.v!=null?a.v:null);
+    const needNote=effv!=null&&(effv>=8||effv<=3)&&v!=null, noteErr=UI.errors['n_'+c.id];
+    return `<div class="crit" id="crit_${c.id}"><div class="ph"><h3>${c.name} <span class="hint">· وزن ${fa(W[c.id])}٪</span></h3>${v!=null?`<span class="tag t-info">دستی</span>`:a&&a.v!=null?`<span class="tag t-info">محاسبه‌شده: ${fa(a.v,1)}</span>`:`<span class="tag t-na">${ico('info')}نیازمند بررسی</span>`}</div>
+     <p class="hint">${c.def}</p>
+     <div class="anch"><span><b>۰</b>${c.a[0]}</span><span><b>۵</b>${c.a[1]}</span><span><b>۱۰</b>${c.a[2]}</span></div>
+     <div class="seg num" role="group" aria-label="امتیاز ${c.name}">${[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" data-act="score" data-c="${c.id}" data-v="${n}" aria-pressed="${v===n}">${fa(n)}</button>`).join('')}<button type="button" data-act="score" data-c="${c.id}" data-v="" aria-pressed="${v==null}">${c.auto?'خودکار':'نیازمند بررسی'}</button></div>
+     ${c.auto&&a&&a.why?`<p class="hint">${ico('info')} ${esc(a.why)}</p>`:''}
+     ${effv!=null&&v!=null?`<div class="fld ${noteErr?'has-err':''}"><label class="lbl" for="note_${c.id}">${effv>=8?'چرا امتیاز بالاست؟':effv<=3?'چرا امتیاز پایین است؟':'توضیح'}${needNote?'<span class="req">*</span>':'<span class="opt">اختیاری</span>'}</label><textarea class="in" id="note_${c.id}" data-note="${c.id}" rows="2" placeholder="یک یا دو جمله با شاهد">${esc(m.note||'')}</textarea>${noteErr?`<div class="err" role="alert">${ico('alert')}${esc(noteErr)}</div>`:''}</div>`:''}</div>`}).join('');
+  return `<div class="panel"><h2>ارزیابی معیارها</h2><p class="hint">برای هر معیار از ۰ تا ۱۰ امتیاز بدهید. اگر اطلاعات ندارید، «نیازمند بررسی» را بگذارید تا داده‌ی ناموجود متوسط حساب نشود. برای امتیاز ۸ تا ۱۰ و ۰ تا ۳ توضیح کوتاه لازم است.</p>
+    <h3 style="margin:0;color:var(--navy)">${GNAME.econ}</h3>${group('econ')}<h3 style="margin:8px 0 0;color:var(--navy)">${GNAME.fit}</h3>${group('fit')}</div>
+   ${ENV.canWrite?`<div class="sticky-actions"><button class="btn primary" data-act="saveEval" data-id="${esc(idea.id)}">ذخیره‌ی ارزیابی</button><button class="btn" data-act="resetEval">بازگرداندن آخرین ذخیره</button>${Object.keys(UI.errors).length?`<span class="err">${ico('alert')}برای امتیازهای بالا یا پایین توضیح بنویسید.</span>`:''}</div>`:`<p class="hint">${ico('lock')} برای ثبت ارزیابی دسترسی نوشتن لازم است.</p>`}`;
+}
+async function saveEval(id){
+  const D=UI.evalDraft,errs={};
+  CRIT.forEach(c=>{const m=D[c.id];if(m&&m.v!=null&&(m.v>=8||m.v<=3)&&!String(m.note||'').trim())errs['n_'+c.id]='برای امتیاز بالا یا پایین، توضیح کوتاه لازم است.'});
+  UI.errors=errs;
+  if(Object.keys(errs).length){render();const f=Object.keys(errs)[0].slice(2);const el=$('#note_'+f);if(el)el.focus();return}
+  const scores={};CRIT.forEach(c=>{const m=D[c.id];if(m&&(m.v!=null||(m.note&&String(m.note).trim())))scores[c.id]={v:m.v==null?null:m.v,note:String(m.note||'').trim()}});
+  const doc={ideaId:id,scores,updatedAt:Date.now(),by:myKey()};
+  const ok=await persist(async()=>{await dbSet('evals',id,doc);if(ENV.mode!=='local')S.evals[id]=doc});
+  if(ok){UI.evalDraft=null;render()}
+}
+function vVote(idea,r){
+  const mine=S.members[myKey()];
+  const pickable=ENV.admin?Object.keys(S.members):(mine?[myKey()]:[]);
+  const mk=UI.votePick&&pickable.includes(UI.votePick)?UI.votePick:(pickable.includes(defVoter())?defVoter():pickable[0]);
+  const v=mk?((S.votes[mk]||{}).votes||{})[idea.id]||{}:{};
+  const editor=!pickable.length?`<div class="empty"><b>برای رأی‌دادن ابتدا پروفایل لازم است</b><span>رأی هر نفر به نام پروفایل او ثبت می‌شود.</span>${ENV.canWrite?`<button class="btn primary" data-act="${ENV.admin?'newMember':'newMine'}">${ENV.admin?'عضو جدید':'ساخت پروفایل من'}</button>`:''}</div>`:
+   `<div class="fld"><label class="lbl" for="vp">رأی به نام</label><select class="in" id="vp" style="max-width:300px" ${pickable.length<2?'disabled':''}>${pickable.map(k=>`<option value="${esc(k)}" ${k===mk?'selected':''}>${esc(S.members[k].name)}${k===myKey()?' (من)':''}</option>`).join('')}</select></div>
+    <div class="fld"><span class="lbl">علاقه (۱ اصلاً تا ۱۰ خیلی زیاد)</span><div class="seg num" role="group" aria-label="علاقه">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" data-act="vote" data-k="interest" data-v="${n}" aria-pressed="${v.interest===n}" ${ENV.canWrite?'':'disabled'}>${fa(n)}</button>`).join('')}</div></div>
+    <div class="fld"><span class="lbl">آیا شریک می‌شوم؟</span><div class="seg" role="group" aria-label="مشارکت">${[['yes','شریک می‌شوم'],['maybe','شاید'],['no','نه']].map(([k,l])=>`<button type="button" data-act="vote" data-k="join" data-v="${k}" aria-pressed="${v.join===k}" ${ENV.canWrite?'':'disabled'}>${l}</button>`).join('')}</div></div>
+    ${v.join==='yes'?`<div class="fld" style="max-width:260px"><label class="lbl" for="vh">ساعت هفتگی که برای این ایده تعهد می‌دهم</label><input class="in" id="vh" inputmode="decimal" value="${esc(v.hours==null?'':v.hours)}" placeholder="مثلاً ۴"><p class="hint" id="vhe"></p></div>`:''}`;
+  const all=Object.keys(S.votes).map(k=>({k,v:((S.votes[k]||{}).votes||{})[idea.id]})).filter(x=>x.v&&S.members[x.k]&&(x.v.interest||x.v.join));
+  return `<div class="panel"><h2>علاقه و مشارکت من</h2><p class="hint">این بخش جذابیت اقتصادی را نمی‌سنجد. فقط می‌گوید چه کسی علاقه و وقت دارد و به محاسبه‌ی خودکار تناسب با گروه کمک می‌کند.</p>${editor}</div>
+   <div class="panel"><h2>نظر اعضا</h2>${all.length?`<table class="tbl stack"><thead><tr><th>عضو</th><th>علاقه</th><th>مشارکت</th><th>ساعت هفتگی</th></tr></thead><tbody>${all.map(x=>`<tr><td class="first name">${esc(S.members[x.k].name)}</td><td data-l="علاقه" class="num">${fa(x.v.interest)}</td><td data-l="مشارکت">${esc({yes:'شریک می‌شوم',maybe:'شاید',no:'نه'}[x.v.join]||'—')}</td><td data-l="ساعت" class="num">${x.v.join==='yes'?fa(x.v.hours):'—'}</td></tr>`).join('')}</tbody></table>`:`<p class="hint">هنوز کسی رأی نداده است.</p>`}</div>`;
+}
+const defVoter=()=>S.members[myKey()]?myKey():Object.keys(S.members)[0];
+let voteT=null;
+function setVote(mk,iid,patch){
+  const cur=clone(S.votes[mk]||{votes:{}});cur.votes=cur.votes||{};const v=Object.assign({},cur.votes[iid]||{},patch);
+  Object.keys(v).forEach(k=>{if(v[k]===undefined||v[k]===null||v[k]==='')delete v[k]});
+  if(v.join&&v.join!=='yes')delete v.hours;
+  cur.votes[iid]=v;cur.updatedAt=Date.now();cur.name=(S.members[mk]||{}).name||'';
+  S.votes[mk]=cur;render();
+  clearTimeout(voteT);voteT=setTimeout(()=>persist(()=>dbSet('votes',mk,cur)),500);
+}
+
+/* ================= EVAL & COMPARE ================= */
+function vEval(){
+  const R=computeAll().filter(r=>!r.idea.archived);
+  if(!R.length)return `<div class="panel"><div class="empty"><b>هنوز ایده‌ای برای ارزیابی نیست</b><span>ابتدا دست‌کم دو ایده ثبت کنید تا مقایسه معنا پیدا کند.</span><button class="btn primary" data-nav="ideas">رفتن به ایده‌ها</button></div></div>`;
+  const ranked=R.filter(r=>r.eligible).sort((a,b)=>b.combined-a.combined);
+  const unr=R.filter(r=>!r.eligible).sort((a,b)=>String(a.idea.title).localeCompare(String(b.idea.title),'fa'));
+  const W=weights();
+  const rowH=(r,rk)=>`<tr><td class="first name" data-l="ایده">${rk?`<span class="num">${rk}</span> `:''}<button class="link" data-act="openIdea" data-id="${esc(r.idea.id)}" data-tab="eval">${esc(r.idea.title)}</button><small>${stageTag(r.stage)} ${confTag(r.conf)}</small></td>
+   <td data-l="اقتصادی">${idxCell(r.econ)}</td><td data-l="تناسب">${idxCell(r.fit)}</td><td data-l="اعتبارسنجی">${valCell(r.val)}</td>
+   <td data-l="علاقه اعضا" class="num">${r.interest!=null?fa(r.interest,1)+' از ۱۰':'—'}</td><td data-l="مشارکت" class="num">${fa(r.joinYes)} نفر</td>
+   <td data-l="منشأ امتیازها"><small class="hint">${srcTxt(r)}</small></td></tr>`;
+  const head=`<thead><tr><th>ایده</th><th>${GNAME.econ}</th><th>${GNAME.fit}</th><th>${GNAME.val}</th><th>علاقه‌ی اعضا</th><th>مشارکت</th><th>منشأ امتیازها</th></tr></thead>`;
+  const sel=UI.compare.filter(id=>S.ideas[id]);
+  return `<div class="panel"><div class="ph"><h2>رتبه‌بندی اولیه</h2></div>
+   <div class="note info">${ico('info')}<span><b>این ابزار کمک تصمیم است، نه پیش‌بینی موفقیت.</b> سه چیز جدا نگه داشته می‌شود: <b>امتیاز محاسباتی</b> (از داده‌های ثبت‌شده)، <b>قضاوت انسانی</b> (امتیاز دستی اعضا) و <b>نتیجه‌ی اعتبارسنجی واقعی</b> (آزمون‌ها و رفتار مشتری). منشأ هر امتیاز کنار آن نوشته شده است. علاقه و مشارکت اعضا جدا و بیرون از امتیازهاست.</span></div>
+   <p class="hint">ترتیب بر پایه‌ی ۴۰٪ اقتصادی، ۳۰٪ تناسب و ۳۰٪ اعتبارسنجی است و فقط وقتی محاسبه می‌شود که دست‌کم ۷۰٪ وزن معیارها (و ۶۰٪ هر شاخص) امتیاز داشته باشد.</p>
+   ${ranked.length?`<div class="tblw"><table class="tbl stack">${head}<tbody>${ranked.map((r,k)=>rowH(r,fa(k+1)+'.')).join('')}</tbody></table></div>`:`<div class="empty"><b>هنوز هیچ ایده‌ای شرایط رتبه‌بندی را ندارد</b><span>ایده‌های زیر را کامل‌تر ارزیابی کنید. تا آن زمان رتبه‌ی قطعی داده نمی‌شود.</span></div>`}</div>
+  ${unr.length?`<div class="panel"><h2>بدون رتبه: اطلاعات کافی نیست (${fa(unr.length)})</h2><div class="tblw"><table class="tbl stack">${head}<tbody>${unr.map(r=>rowH(r,'')).join('')}</tbody></table></div>
+   ${unr.slice(0,6).map(r=>`<div class="hint"><b>${esc(r.idea.title)}:</b> ${esc(r.whyNot)}</div>`).join('')}</div>`:''}
+  <div class="panel"><h2>مقایسه‌ی کنار هم</h2><p class="hint">تا ۴ ایده را انتخاب کنید.</p>
+   <div class="seg" role="group" aria-label="انتخاب ایده برای مقایسه">${R.map(r=>`<button type="button" data-act="cmp" data-id="${esc(r.idea.id)}" aria-pressed="${sel.includes(r.idea.id)}">${esc(r.idea.title)}</button>`).join('')}</div>
+   ${sel.length>=2?compareTable(sel.map(id=>R.find(r=>r.idea.id===id)).filter(Boolean),W):`<div class="empty">برای دیدن جدول مقایسه حداقل دو ایده انتخاب کنید.</div>`}</div>`;
+}
+function scoreCell(e){
+  if(e.v==null)return `<span class="tag t-na">${ico('info')}نیازمند بررسی</span>${e.why?`<div class="hint">${esc(e.why)}</div>`:''}`;
+  const b=critBand(e.v), k=b;return `<div class="idx"><b>${fa(e.v,1)}</b>${bandTag(k)}<small>${e.src==='auto'?'محاسبه‌شده':'دستی'}</small>${e.note?`<small>${esc(e.note)}</small>`:''}</div>`;
+}
+function compareTable(rs,W){
+  const head=`<tr><th></th>${rs.map(r=>`<th>${esc(r.idea.title)}</th>`).join('')}</tr>`;
+  const row=(l,f)=>`<tr><td class="name">${l}</td>${rs.map(r=>`<td>${f(r)}</td>`).join('')}</tr>`;
+  return `<div class="tblw"><table class="tbl cmp"><thead>${head}</thead><tbody>
+   ${row('مرحله',r=>stageTag(r.stage))}
+   ${row(GNAME.econ,r=>idxCell(r.econ))}${row(GNAME.fit,r=>idxCell(r.fit))}${row(GNAME.val,r=>valCell(r.val))}
+   ${row('سطح اطمینان',r=>confTag(r.conf))}${row('منشأ امتیازها',r=>`<small>${srcTxt(r)}</small>`)}${row('رتبه‌بندی',r=>r.eligible?`<span class="tag t-good">${ico('check')}دارای داده‌ی کافی</span>`:`<span class="tag t-na">${ico('info')}اطلاعات کافی نیست</span>`)}
+   ${row('علاقه‌ی اعضا',r=>r.interest!=null?`<span class="num">${fa(r.interest,1)} از ۱۰ (${fa(r.nRated)} رأی)</span>`:'—')}
+   ${row('تمایل به مشارکت',r=>`${fa(r.joinYes)} نفر قطعی · ${fa(r.crew.length-r.joinYes)} شاید`)}
+   ${CRIT.map(c=>row(`${c.name.replace(/ \(.*\)/,'')} <small class="hint">وزن ${fa(W[c.id])}٪</small>`,r=>scoreCell(r.eff[c.id]))).join('')}
+   ${row('سرمایه‌ی اولیه',r=>r.idea.capital!=null?fa(r.idea.capital)+' میلیون':'—')}${row('زمان تا راه‌اندازی',r=>r.idea.launchWeeks!=null?fa(r.idea.launchWeeks)+' هفته':'—')}${row('زمان هفتگی لازم',r=>r.idea.weeklyHours!=null?fa(r.idea.weeklyHours)+' ساعت':'—')}
+   ${row('کامل‌بودن اطلاعات ایده',r=>`<span class="num">${fa(r.dc*100)}٪</span>`)}
+  </tbody></table></div>`;
+}
+
+/* ================= VALIDATION PLAN ================= */
+const today=()=>new Date().toISOString().slice(0,10);
+const overdue=t=>t.deadline&&t.deadline<today()&&(t.status==='planned'||t.status==='running');
+function vValid(){
+  const ideas=ideasList().filter(i=>!i.archived), tests=Object.entries(S.tests).map(([id,t])=>({id,...t})).filter(t=>S.ideas[t.ideaId]);
+  if(UI.testDraft)return vTestForm();
+  if(!ideas.length)return `<div class="panel"><div class="empty"><b>ابتدا یک ایده ثبت کنید</b><span>آزمون‌های اعتبارسنجی به فرضیات هر ایده وصل می‌شوند.</span><button class="btn primary" data-nav="ideas">رفتن به ایده‌ها</button></div></div>`;
+  const f=UI.tfilter, shown=tests.filter(t=>!f||(f==='late'?overdue(t):t.status===f));
+  const prog=tests.length?tests.filter(t=>t.status==='passed'||t.status==='failed').length/tests.length*100:0;
+  return `<div class="panel"><div class="ph"><h2>برنامه‌ی اعتبارسنجی</h2>${ENV.canWrite?`<button class="btn primary" data-act="newTest">${ico('plus')}آزمون جدید</button>`:''}</div>
+   <p class="hint">هر فرض مهم را با یک آزمون ارزان و معیار موفقیت مشخص بسنجید. نتیجه‌ی آزمون می‌تواند به‌عنوان «شاهد معتبر» به ایده اضافه شود.</p>
+   <div class="mini"><div>کل آزمون‌ها<b>${fa(tests.length)}</b></div><div>انجام‌شده<b>${fa(tests.filter(t=>t.status==='passed'||t.status==='failed').length)}</b></div><div>عقب‌افتاده<b>${fa(tests.filter(overdue).length)}</b></div></div>
+   <div class="meter" role="img" aria-label="${fa(prog)} درصد آزمون‌ها انجام شده"><i style="width:${prog}%"></i></div>
+   <div class="seg" role="group" aria-label="فیلتر وضعیت">${[['','همه'],...TSTATUS,['late','عقب‌افتاده']].map(([k,l])=>`<button type="button" data-act="tf" data-v="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</div></div>
+  ${ideas.map(i=>{const ts=shown.filter(t=>t.ideaId===i.id);const r=computeIdea(i,ctxNow());if(!ts.length&&f)return '';
+   return `<div class="panel"><div class="ph"><h2><button class="link" data-act="openIdea" data-id="${esc(i.id)}">${esc(i.title)}</button></h2><span>${stageTag(r.stage)}</span></div>
+    ${ts.length?ts.map(t=>testCard(t)).join(''):`<p class="hint">آزمونی ثبت نشده. ${(i.assumptions||[]).length?`${fa(i.assumptions.length)} فرض بدون آزمون است.`:'ابتدا فرضیات ایده را ثبت کنید.'}</p>`}</div>`}).join('')||`<div class="empty">آزمونی با این فیلتر نیست.</div>`}`;
+}
+function testCard(t){
+  const late=overdue(t), own=(S.members[t.owner]||{}).name||'';
+  const row=(k,v)=>v?`<div><span class="hint">${k}:</span> ${v}</div>`:'';
+  return `<div class="rowitem"><div class="ph"><b>${esc(t.assumption||'(بدون عنوان)')}</b><span><span class="tag t-${t.status==='passed'?'good':t.status==='failed'?'bad':t.status==='running'?'info':'na'}">${esc(lab(TSTATUS,t.status))}</span>${late?` <span class="tag t-bad">${ico('alert')}عقب‌افتاده</span>`:''}${t.decision?` <span class="tag t-info">تصمیم بعدی: ${esc(lab(DECISION,t.decision))}</span>`:''}</span></div>
+   ${row('روش',esc(lab(METHODS,t.method)))}${row('گروه مشتری برای گفتگو',esc(t.customerGroup))}${row('شاخص موفقیت',esc(t.metric))}${row('شاخص شکست',esc(t.failMetric))}${row('هزینه',t.cost!=null&&t.cost!==''?fa(t.cost,1)+' میلیون تومان':'')}${row('زمان اجرا',t.days!=null&&t.days!==''?fa(t.days)+' روز':'')}${row('موعد',t.deadline?dateFa(t.deadline):'')}${row('مسئول',esc(own))}
+   ${t.result?`<div><b>نتیجه‌ی واقعی:</b> ${esc(t.result)}</div>`:(t.status==='passed'||t.status==='failed'?'':`<div class="hint">نتیجه‌ی واقعی هنوز ثبت نشده است.</div>`)}
+   ${ENV.canWrite?`<div class="bar"><select class="in" style="width:170px" data-tstatus="${esc(t.id)}" aria-label="وضعیت آزمون">${TSTATUS.map(([k,l])=>`<option value="${k}" ${t.status===k?'selected':''}>${l}</option>`).join('')}</select>
+    <button class="btn sm" data-act="editTest" data-id="${esc(t.id)}">${ico('edit')}ویرایش</button>
+    ${(t.status==='passed'||t.status==='failed')&&t.result&&!t.logged?`<button class="btn sm" data-act="logEvidence" data-id="${esc(t.id)}">ثبت به‌عنوان شاهد معتبر</button>`:''}${t.logged?'<span class="tag t-good">'+ico('check')+'به‌عنوان شاهد ثبت شد</span>':''}
+    <button class="btn sm danger" data-act="delTest" data-id="${esc(t.id)}">${ico('trash')}حذف</button></div>`:''}</div>`;
+}
+function vTestForm(){
+  const d=UI.testDraft, ideas=ideasList().filter(i=>!i.archived||i.id===d.ideaId), idea=ideaOf(d.ideaId);
+  const asum=idea?(idea.assumptions||[]).filter(a=>a.text):[];
+  return `<div class="bar"><button class="btn sm" data-act="cancelForm">${ico('back')}بازگشت</button></div><div class="panel"><h2>${d._id?'ویرایش آزمون':'آزمون جدید'}</h2>
+   <div class="grid g2">${fld('ایده',sel('ideaId',ideas.map(i=>[i.id,i.title])),{req:true,path:'ideaId'})}${fld('روش آزمون',sel('method',METHODS.map(m=>[m[0],m[1]]),'انتخاب کنید'),{req:true,path:'method'})}</div>
+   ${fld('فرضی که آزموده می‌شود',inp('assumption',{ph:'مثلاً مدیران کارخانه حاضرند ماهانه ۵ میلیون برای این خدمت بپردازند'}),{req:true,path:'assumption'})}
+   ${asum.length?`<div class="seg" role="group" aria-label="انتخاب از فرضیات ایده">${asum.map(a=>`<button type="button" data-act="useAssumption" data-v="${esc(a.text)}">${esc(a.text.slice(0,50))}</button>`).join('')}</div>`:''}
+   ${fld('گروه مشتریانی که باید با آن‌ها صحبت شود',inp('customerGroup',{ph:'مثلاً مدیران تولید کارخانه‌های ۲۰ تا ۱۰۰ نفره'}),{path:'customerGroup'})}
+   <div class="grid g2">${fld('شاخص موفقیت (قبل از اجرا مشخص کنید)',inp('metric',{ph:'مثلاً ۳ نفر از ۵ نفر پیش‌پرداخت کنند'}),{req:true,path:'metric'})}${fld('شاخص شکست',inp('failMetric',{ph:'مثلاً کمتر از ۱ نفر علاقه نشان دهد'}),{path:'failMetric'})}</div>
+   <div class="grid g3">${fld('هزینه‌ی اجرا (میلیون تومان)',inp('cost',{num:true}),{path:'cost'})}${fld('زمان اجرا (روز)',inp('days',{num:true}),{path:'days'})}${fld('موعد',inp('deadline',{type:'date'}),{path:'deadline'})}</div>
+   <div class="grid g2">${fld('مسئول',sel('owner',Object.entries(S.members).map(([k,m])=>[k,m.name]),'نامشخص'),{path:'owner'})}${fld('وضعیت',sel('status',TSTATUS,''),{path:'status'})}</div>
+   ${fld('نتیجه‌ی واقعی',txa('result','بعد از اجرا بنویسید چه دیدید. برای وضعیت «موفق» یا «ناموفق» لازم است.'),{path:'result'})}
+   ${fld('تصمیم بعدی',segb('decision',DECISION),{group:true,path:'decision'})}
+   <div class="bar"><button class="btn primary" data-act="saveTest">ذخیره</button><button class="btn" data-act="cancelForm">لغو</button></div></div>`;
+}
+async function saveTest(){
+  const d=UI.testDraft,e={};
+  if(!d.ideaId)e.ideaId='ایده را انتخاب کنید.';if(!d.method)e.method='روش آزمون را انتخاب کنید.';
+  if(!String(d.assumption||'').trim())e.assumption='فرض موردآزمون را بنویسید.';if(!String(d.metric||'').trim())e.metric='شاخص موفقیت را مشخص کنید.';
+  ['cost','days'].forEach(k=>{const v=d[k];if(v!=null&&v!==''&&(isNaN(v)||v<0||v>1e6))e[k]='عدد معتبر و غیرمنفی وارد کنید.'});
+  if((d.status==='passed'||d.status==='failed')&&!String(d.result||'').trim())e.result='برای وضعیت «موفق» یا «ناموفق»، نتیجه‌ی واقعی را ثبت کنید.';
+  if(d.deadline&&!/^\d{4}-\d{2}-\d{2}$/.test(d.deadline))e.deadline='تاریخ معتبر وارد کنید.';
+  UI.errors=e;if(Object.keys(e).length){render();return}
+  const id=d._id||newId('t'),o=clone(d);delete o._id;o.updatedAt=Date.now();if(!o.createdAt)o.createdAt=Date.now();
+  ['cost','days'].forEach(k=>{if(o[k]===''||o[k]==null||isNaN(o[k]))o[k]=null});
+  const ok=await persist(async()=>{await dbSet('tests',id,o);if(ENV.mode!=='local')S.tests[id]=o});
+  if(ok){UI.testDraft=null;UI.draft=null;UI.dirty=false;render()}
+}
+
+/* ================= SETTINGS ================= */
+function legacyPanel(){
+  const n=legacyPending(),sc=LEG.scan;
+  return `<div class="panel"><h2>انتقال داده‌های نسخه‌ی قبلی</h2>${!sc?`<p class="hint">داده‌ی نسخه‌ی قبلی خوانده نشد یا وجود ندارد.</p>`:n?`<p>پیدا شد: <b>${fa(n.profiles)}</b> پروفایل، <b>${fa(n.ratings)}</b> فهرست رأی، <b>${fa(n.analysis)}</b> تحلیل بازار.</p>
+   <ul class="hint" style="margin:0;padding-inline-start:20px"><li>پروفایل‌ها به «اعضا» و اطلاعات مالی به بخش خصوصی هر عضو می‌روند. مهارت‌های متنی بدون سطح می‌مانند تا خودتان سطح بدهید.</li><li>رأی‌ها به علاقه و مشارکت تبدیل می‌شوند.</li><li>تحلیل‌های قبلی Claude فقط «یادداشت هوش مصنوعی بررسی‌نشده» می‌شوند و امتیاز نمی‌گیرند.</li><li>داده‌ی قبلی هیچ‌جا حذف یا بازنویسی نمی‌شود و انتقال تکرارپذیر است.</li></ul>
+   <label class="bar" style="gap:8px;font-size:14px"><input type="checkbox" id="legStubs"> نام ۱۲ عضو فهرست قبلی را که هنوز پروفایل ندارند به‌صورت «پروفایل ناقص» اضافه کن</label>
+   <div class="bar"><button class="btn primary" data-act="legacyGo">انتقال</button></div>`:`<p class="hint">همه‌ی داده‌های نسخه‌ی قبلی منتقل شده‌اند.</p>`}<div id="legMsg" class="hint" role="status"></div></div>`;
+}
+function vSettings(){
+  const W=UI.weightsDraft||(UI.weightsDraft=Object.assign({},weights()));
+  const sum=Object.values(W).reduce((a,b)=>a+(Number(b)||0),0), okSum=Math.abs(sum-100)<.001;
+  const hasSample=[...Object.keys(S.members),...Object.keys(S.ideas)].some(k=>k.startsWith('smp_'));
+  return `<div class="panel"><div class="ph"><h2>وزن معیارها</h2><span class="tag t-${okSum?'good':'bad'}">${ico(okSum?'check':'alert')}مجموع ${fa(sum,1)} از ۱۰۰</span></div>
+   <p class="hint">مجموع وزن‌ها باید دقیقاً ۱۰۰ باشد. هر شاخص فقط از وزن معیارهایی که امتیاز دارند محاسبه می‌شود.</p>
+   <div class="tblw"><table class="tbl stack"><thead><tr><th>معیار</th><th>شاخص</th><th>وزن (٪)</th></tr></thead><tbody>${CRIT.map(c=>`<tr><td class="first name">${c.name}<small>${c.def}</small></td><td data-l="شاخص">${c.g==='econ'?'اقتصادی':'تناسب'}</td><td data-l="وزن"><input class="in num" style="width:90px" inputmode="decimal" data-w="${c.id}" value="${esc(W[c.id])}" aria-label="وزن ${c.name}" ${ENV.admin?'':'disabled'}></td></tr>`).join('')}</tbody></table></div>
+   ${ENV.admin&&ENV.canWrite?`<div class="bar"><button class="btn primary" data-act="saveW" ${okSum?'':'disabled'}>ذخیره‌ی وزن‌ها</button><button class="btn" data-act="normW">نرمال‌سازی به ۱۰۰</button><button class="btn" data-act="defW">بازگشت به پیش‌فرض</button>${okSum?'':`<span class="err">${ico('alert')}مجموع باید ۱۰۰ باشد.</span>`}</div>`:`<p class="hint">${ico('lock')} فقط مدیر وزن‌ها را تغییر می‌دهد.</p>`}</div>
+  <div class="panel"><h2>تعریف معیارها و مقیاس امتیاز</h2><details class="h"><summary>نمایش مقیاس‌ها</summary><div class="grid" style="margin-top:10px">${CRIT.map(c=>`<div class="crit"><h3>${c.name}</h3><p class="hint">${c.def}</p><div class="anch"><span><b>۰</b>${c.a[0]}</span><span><b>۵</b>${c.a[1]}</span><span><b>۱۰</b>${c.a[2]}</span></div></div>`).join('')}<div class="crit"><h3>${GNAME.val}</h3><p class="hint">هر شاهد معتبر ۳ امتیاز، هر شاهد اولیه ۱ امتیاز و هر فرضیه ۰ امتیاز دارد. ۹ امتیاز برابر ۱۰۰ است.</p></div></div></details></div>
+  <div class="panel"><h2>خروجی ساخت‌یافته برای GPT و Claude</h2>
+   <p class="hint">یک فایل JSON با چند بخش جدا: واقعیت‌های دارای منبع، تخمین‌ها، فرضیات، نامعلوم‌ها، پیشنهادهای هوش مصنوعی و نتایج واقعی آزمایش‌ها. همان فایل برای بازیابی دوباره در این ابزار هم کافی است.</p>
+   <div class="note">${ico('info')}<span>تحلیل مستقیم با هوش مصنوعی در این صفحه فعال نیست. فایل را خودتان در GPT یا Claude بارگذاری کنید و نتیجه را در تب «یادداشت‌های هوش مصنوعی» هر ایده ثبت کنید. این یادداشت‌ها در امتیازها اثر ندارند.</span></div>
+   ${ENV.admin?`<label class="bar" style="gap:8px;font-size:14px"><input type="checkbox" id="incPriv"> شامل اطلاعات خصوصی اعضا (سرمایه، حداکثر زیان، تماس). پیش‌فرض خاموش است.</label>`:`<p class="hint">${ico('lock')} اطلاعات خصوصی دیگران در خروجی شما نیست.</p>`}
+   <div class="bar"><button class="btn" data-act="expJson">${ico('down')}خروجی JSON</button><button class="btn" data-act="expCsv">${ico('down')}جدول ایده‌ها (CSV)</button><button class="btn" data-act="copyPrompt">کپی راهنمای پرسش برای GPT یا Claude</button>${ENV.admin&&ENV.canWrite?`<label class="btn" for="impFile">${ico('up')}بازیابی از JSON</label><input id="impFile" type="file" accept="application/json,.json" style="position:absolute;opacity:0;width:1px;height:1px">`:''}</div>
+   <textarea id="promptBox" class="in" rows="5" readonly hidden aria-label="راهنمای پرسش">${esc(AI_PROMPT)}</textarea><div id="expMsg" class="hint" role="status"></div></div>
+  ${ENV.mode==='shared'&&ENV.isOwner?legacyPanel():''}
+  ${ENV.canWrite?`<div class="panel"><h2>داده‌ی نمونه</h2><p class="hint">برای آشنایی با ابزار. همه‌ی موارد با برچسب «نمونه» مشخص‌اند و جدا از داده‌ی واقعی حذف می‌شوند.</p><div class="bar"><button class="btn" data-act="sample">افزودن داده‌ی نمونه</button>${hasSample?`<button class="btn danger" data-act="rmSample">${ico('trash')}حذف همه‌ی نمونه‌ها</button>`:''}</div></div>`:''}
+  <div class="panel"><h2>دسترسی‌ها</h2><ul style="margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px"><li>مدیر (مالک یا ویرایشگر): همه‌ی پروفایل‌ها و اطلاعات مالی را می‌بیند و وزن‌ها را تغییر می‌دهد.</li><li>مشارکت‌کننده: پروفایل خودش و اطلاعات مالی خودش را ویرایش می‌کند، ایده و ارزیابی ثبت می‌کند.</li><li>بیننده: فقط مشاهده.</li></ul></div>`;
+}
+function dl(filename,data,type){
+  const msg=$('#expMsg');
+  const fallback=()=>{try{const b=new Blob([data],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);if(msg)msg.textContent='فایل آماده‌ی دانلود شد.'}catch(e){if(msg)msg.textContent='دانلود در این محیط ممکن نیست.'}};
+  if(ENV.mode==='local'){fallback();return}
+  (async()=>{try{const d=await window.claude.use('downloads');if(!d){if(msg)msg.textContent='ذخیره‌ی فایل در این نما ممکن نیست.';return}
+    await d.save({filename,data});if(msg)msg.textContent='فایل ذخیره شد.'}catch(e){if(msg)msg.textContent=e&&e.code==='declined'?'ذخیره لغو شد.':'ذخیره‌ی فایل انجام نشد.'}})();
+}
+function knowledgeOf(i,r){
+  const K={verified_facts:[],estimates:[],assumptions:[],unknowns:[],ai_suggestions:[],experiment_results:[]};
+  const it=(text,x)=>Object.assign({text},x||{});
+  MKT.forEach(([k,t])=>{const x=(i.market||{})[k];
+    if(!x||!x.text){K.unknowns.push(it(t+': اطلاعاتی ثبت نشده',{topic:k}));return}
+    const o=it(x.text,{topic:k,topic_title:t,source:x.source||null,date:x.date||null,confidence:x.conf||null});
+    (x.kind==='fact'&&x.source?K.verified_facts:x.kind==='estimate'?K.estimates:x.kind==='unknown'?K.unknowns:K.assumptions).push(o)});
+  (i.evidence||[]).forEach(e=>{if(!e.text)return;(e.type==='val'?K.verified_facts:e.type==='init'?K.estimates:K.assumptions).push(it(e.text,{source:e.source||null,evidence_level:e.type}))});
+  (i.assumptions||[]).forEach(a=>{if(a.text)K.assumptions.push(it(a.text,{status:a.status||'untested',is_key_hypothesis:!!a.key}))});
+  [['capital','سرمایه‌ی اولیه (میلیون تومان)'],['launchWeeks','زمان تا راه‌اندازی (هفته)'],['weeklyHours','زمان هفتگی لازم (ساعت)']].forEach(([f,t])=>{if(i[f]!=null&&i[f]!=='')K.estimates.push(it(t+': '+i[f],{field:f,value:i[f],source:'برآورد عضو'}))});
+  r.missing.forEach(m=>K.unknowns.push(it('معیار «'+m+'» هنوز امتیاز ندارد (نیازمند بررسی)',{kind:'criterion'})));
+  (i.aiNotes||[]).forEach(n=>K.ai_suggestions.push({text:n.text,generated_by:n.source||null,date:n.date||null,human_reviewed:!!n.reviewed,note:'تولیدشده توسط هوش مصنوعی؛ در هیچ امتیازی استفاده نشده'}));
+  Object.values(S.tests).filter(t=>t.ideaId===i.id&&(t.status==='passed'||t.status==='failed')).forEach(t=>K.experiment_results.push({assumption:t.assumption,method:lab(METHODS,t.method)||null,success_metric:t.metric||null,failure_metric:t.failMetric||null,status:t.status,result:t.result||null,decision:t.decision||null,cost_million_toman:t.cost??null,duration_days:t.days??null,customer_group:t.customerGroup||null}));
+  return K;
+}
+const AI_PROMPT='این فایل JSON خروجی ابزار «رادار ایده» است. فقط بر پایه‌ی داده‌ی همین فایل تحلیل کن. هیچ آمار، قیمت، منبع یا واقعیت بازاری از خودت نساز و اگر چیزی در فایل نیست آن را «نامعلوم» بدان. چهار دسته را جدا نگه دار: verified_facts (واقعیت‌های دارای منبع)، estimates (تخمین‌ها)، assumptions (فرضیات)، unknowns (نامعلوم‌ها). ai_suggestions پیشنهادهای قبلی هوش مصنوعی هستند و شواهد حساب نمی‌شوند. experiment_results تنها نتیجه‌ی واقعی آزمایش‌هاست. خروجی بده: ۱) مهم‌ترین ریسک‌ها و فرضیه‌های آزمون‌نشده‌ی هر ایده، ۲) برای هر کدام یک آزمون کم‌هزینه با شاخص موفقیت و شکست، ۳) اطلاعاتی که باید جمع شود. هیچ ایده‌ای را فقط به خاطر امتیاز بالا تأییدشده معرفی نکن.';
+function buildExport(incPriv){
+  const priv=!!(incPriv&&ENV.admin), R=computeAll(), W=weights(), r1=n=>n==null?null:Math.round(n*10)/10;
+  const members=Object.entries(S.members).map(([id,m])=>Object.assign({id},clone(m),priv&&S.members_private[id]?{private:clone(S.members_private[id])}:{}));
+  const ideas=R.map(r=>{const i=r.idea;
+    return {id:i.id,title:i.title,problem:i.problem||null,target_customer:i.target||null,solution:i.solution||null,product:i.product||null,revenue_model:i.revenue||null,industry:i.industry||null,geography:i.geo||null,competitive_advantage:i.advantage||null,competitors:i.competitors||null,required_skills:tags(i.requiredSkills),status:i.status||'new',archived:!!i.archived,created_at:i.createdAt||null,updated_at:i.updatedAt||null,
+      estimates_entered:{initial_capital_million_toman:i.capital??null,launch_weeks:i.launchWeeks??null,weekly_hours:i.weeklyHours??null},
+      computed:{stage:r.stage,confidence:r.conf,eligible_for_ranking:r.eligible,why_not_ranked:r.whyNot||null,indices:{economic:{score:r1(r.econ.score),coverage:r1(r.econ.cov)},fit:{score:r1(r.fit.score),coverage:r1(r.fit.cov)},validation:{score:r1(r.val.score),evidence_counts:r.val.cnt}},combined_score:r1(r.combined),combined_formula:'0.4*economic+0.3*fit+0.3*validation (only when eligible_for_ranking)',
+        criteria:CRIT.map(c=>({id:c.id,name:c.name,group:c.g,weight:W[c.id],value:r1(r.eff[c.id].v),origin:r.eff[c.id].src==='manual'?'human_judgment':r.eff[c.id].src==='auto'?'computed_from_data':'needs_review',note:r.eff[c.id].note||null}))},
+      interest_and_participation:Object.keys(S.votes).map(mk=>({mk,v:((S.votes[mk]||{}).votes||{})[i.id]})).filter(x=>x.v&&S.members[x.mk]).map(x=>({member_id:x.mk,member_name:S.members[x.mk].name,interest_1_to_10:x.v.interest??null,join:x.v.join||null,weekly_hours:x.v.hours??null})),
+      knowledge:knowledgeOf(i,r)};});
+  const data={members:S.members,ideas:S.ideas,evals:S.evals,votes:S.votes,tests:S.tests,config:S.config};
+  if(priv)data.members_private=S.members_private;
+  return {app:'radar-ide',schema:'radar-idea/3',version:3,exportedAt:new Date().toISOString(),
+    readme:{purpose:'خروجی ساخت‌یافته‌ی ابزار رادار ایده برای تحلیل با GPT یا Claude و بازیابی دوباره در همین ابزار.',suggested_prompt:AI_PROMPT,
+      data_classes:{verified_facts:'واقعیت‌های دارای منبع و شواهد معتبر از مشتری یا بازار',estimates:'تخمین‌ها و شواهد اولیه',assumptions:'فرضیات و باورهای آزمون‌نشده',unknowns:'اطلاعات نامعلوم یا معیارهای بدون امتیاز',ai_suggestions:'پیشنهادهای تولیدشده توسط هوش مصنوعی؛ بررسی‌نشده و بدون اثر بر امتیاز',experiment_results:'نتیجه‌ی واقعی آزمایش‌های اعتبارسنجی'},
+      notices:['این فایل داده‌ی زنده‌ی بازار ندارد و هیچ آماری را خودکار اضافه نکرده است.','امتیازها ابزار کمک تصمیم‌اند و موفقیت کسب‌وکار را پیش‌بینی نمی‌کنند.'],
+      privacy:{includes_private_member_data:priv,note:priv?'این فایل اطلاعات مالی و تماس اعضا را دارد؛ آن را فقط با افراد مجاز و ابزارهای مورداعتماد به اشتراک بگذارید.':'اطلاعات مالی و تماس خصوصی اعضا در این فایل نیست.'}},
+    criteria:CRIT.map(c=>({id:c.id,name:c.name,group:c.g,definition:c.def,scale_0:c.a[0],scale_5:c.a[1],scale_10:c.a[2],weight:W[c.id]})),
+    members,ideas,validation_tests:Object.entries(S.tests).map(([id,t])=>Object.assign({id},clone(t))),data};
+}
+function expJson(){
+  const inc=!!($('#incPriv')&&$('#incPriv').checked);
+  dl('radar-idea-'+today()+(inc?'-with-private':'')+'.json',JSON.stringify(buildExport(inc),null,1),'application/json');
+}
+async function copyPrompt(){
+  const m=$('#expMsg');
+  try{await navigator.clipboard.writeText(AI_PROMPT);m.textContent='راهنمای پرسش کپی شد.'}
+  catch(e){const t=$('#promptBox');if(t){t.hidden=false;t.focus();t.select();m.textContent='کپی خودکار ممکن نشد؛ متن را انتخاب و کپی کنید.'}}
+}
+function expCsv(){
+  const R=computeAll(),q=v=>{let t=String(v==null?'':v);if(/^[=+\-@\t\r]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"'};
+  const h=['عنوان','مرحله','شاخص اقتصادی','شاخص تناسب','شاخص اعتبارسنجی','سطح اطمینان','دارای رتبه','علاقه اعضا (از ۱۰)','تعداد شریک','سرمایه (میلیون تومان)','زمان تا راه‌اندازی (هفته)','زمان هفتگی (ساعت)','کامل‌بودن اطلاعات (٪)','صنعت','مشتری هدف'];
+  const rows=R.map(r=>[r.idea.title,STAGE[r.stage][0],r.econ.cov>=.5&&r.econ.score!=null?Math.round(r.econ.score):'نیازمند بررسی',r.fit.cov>=.5&&r.fit.score!=null?Math.round(r.fit.score):'نیازمند بررسی',Math.round(r.val.score),CONFL[r.conf][0],r.eligible?'بله':'خیر',r.interest!=null?r.interest.toFixed(1):'',r.joinYes,r.idea.capital,r.idea.launchWeeks,r.idea.weeklyHours,Math.round(r.dc*100),r.idea.industry,r.idea.target]);
+  dl('radar-idea-ideas-'+today()+'.csv','﻿'+[h,...rows].map(r=>r.map(q).join(',')).join('\n'),'text/csv');
+}
+/* ---- safe import ---- */
+const BADK=['__proto__','constructor','prototype'], IDRE=/^[A-Za-z0-9_\-.~:@+]{1,200}$/;
+function cleanVal(v,d=0){
+  if(d>12)return null;
+  if(Array.isArray(v))return v.slice(0,500).map(x=>cleanVal(x,d+1));
+  if(v&&typeof v==='object'){const o={};for(const k of Object.keys(v)){if(BADK.includes(k)||k.length>100)continue;o[k]=cleanVal(v[k],d+1)}return o}
+  if(typeof v==='string')return v.slice(0,20000);
+  if(typeof v==='number')return isFinite(v)?v:null;
+  return (typeof v==='boolean'||v===null)?v:null;
+}
+const DOCCHK={ideas:d=>typeof d.title==='string'&&d.title.trim(),members:d=>typeof d.name==='string'&&d.name.trim(),votes:d=>d.votes&&typeof d.votes==='object',evals:d=>d.scores&&typeof d.scores==='object',tests:d=>typeof d.ideaId==='string',members_private:d=>true,config:d=>true};
+function parseBackup(text,isAdmin){
+  if(typeof text!=='string'||text.length>8e6)return {ok:false,error:'فایل خالی یا بیش از حد بزرگ است.'};
+  let o;try{o=JSON.parse(text)}catch(e){return {ok:false,error:'فایل JSON معتبر نیست.'}}
+  if(!o||typeof o!=='object'||o.app!=='radar-ide')return {ok:false,error:'این فایل پشتیبان رادار ایده نیست.'};
+  if(![2,3].includes(o.version))return {ok:false,error:'نسخه‌ی این پشتیبان پشتیبانی نمی‌شود.'};
+  const src=o.version===3?(o.data||{}):o;
+  const docs={},warn=[];let total=0;
+  for(const c of ['members','members_private','ideas','evals','votes','tests','config']){
+    const m=src[c];if(m==null)continue;
+    if(typeof m!=='object'||Array.isArray(m)){warn.push(`بخش ${c} ساختار معتبر ندارد و نادیده گرفته شد.`);continue}
+    if(c==='members_private'&&!isAdmin){warn.push('اطلاعات خصوصی اعضا فقط توسط مدیر وارد می‌شود و نادیده گرفته شد.');continue}
+    docs[c]={};
+    for(const [id,d] of Object.entries(m)){
+      if(!IDRE.test(id)||BADK.includes(id)||!d||typeof d!=='object'||Array.isArray(d)||!DOCCHK[c](d)){warn.push(`یک سند نامعتبر در ${c} رد شد.`);continue}
+      if(c==='config'){if(id==='main'){const w=d.weights;const sm=w&&typeof w==='object'?Object.values(w).reduce((a,b)=>a+(Number(b)||0),0):NaN;if(!(Math.abs(sm-100)<.001)){warn.push('وزن‌های پشتیبان مجموع ۱۰۰ ندارد و رد شد.');continue}}else if(id!=='meta'){continue}}
+      if(JSON.stringify(d).length>200000){warn.push(`سند ${id} بیش از حد بزرگ است و رد شد.`);continue}
+      if(++total>5000){warn.push('تعداد اسناد از ۵۰۰۰ بیشتر است؛ ادامه نادیده گرفته شد.');break}
+      docs[c][id]=cleanVal(d);
+    }
+  }
+  if(!total)return {ok:false,error:'هیچ داده‌ی معتبری در فایل پیدا نشد.',warn};
+  return {ok:true,docs,total,warn:[...new Set(warn)]};
+}
+window.RadarCore.parseBackup=parseBackup;window.RadarCore.buildExport=buildExport;window.RadarCore.knowledgeOf=knowledgeOf;
+async function importJson(file){
+  const msg=$('#expMsg');
+  let text='';try{text=await file.text()}catch(e){msg.textContent='خواندن فایل ممکن نشد.';return}
+  const r=parseBackup(text,ENV.admin);
+  if(!r.ok){msg.textContent=r.error+(r.warn&&r.warn.length?' '+r.warn.join(' '):'');return}
+  if(!await ask({title:'بازیابی از پشتیبان',msg:`${fa(r.total)} سند وارد می‌شود. اسناد هم‌شناسه جایگزین می‌شوند و چیزی حذف نمی‌شود.${r.warn.length?' هشدار: '+r.warn.join(' '):''}`,ok:'بازیابی'}))return;
+  const ok=await persist(async()=>{for(const c of Object.keys(r.docs))for(const [id,v] of Object.entries(r.docs[c]))await dbSet(c,id,v)});
+  const text2=ok?`${fa(r.total)} سند بازیابی شد.`:'بازیابی کامل نشد؛ بخشی از اسناد ممکن است نوشته شده باشد.';
+  if(ok)render();
+  const m2=$('#expMsg')||msg;m2.textContent=text2;
+}
+
+/* ---- legacy (v1) migration: profiles / ratings / analysis -> members / votes / AI notes ---- */
+const LEG={scan:null};
+async function legacyScan(){
+  if(ENV.mode!=='shared'||!ENV.isOwner)return;
+  try{const g=async c=>(await ENV.db.collection(c).get()).docs.map(d=>({id:d.id,data:d.data()}));
+    const [profiles,ratings,analysis]=await Promise.all([g('profiles'),g('ratings'),g('analysis')]);
+    LEG.scan={profiles,ratings,analysis}}catch(e){LEG.scan=null}
+}
+function legacyPending(){
+  if(!LEG.scan||!ENV.admin)return null;
+  const sc=LEG.scan;
+  const n={profiles:sc.profiles.filter(x=>!S.members[x.id]).length,ratings:sc.ratings.filter(x=>!S.votes[x.id]&&Object.keys((x.data||{}).votes||{}).length).length,
+    analysis:sc.analysis.filter(x=>S.ideas[x.id]&&!(((S.ideas[x.id]||{}).aiNotes)||[]).some(a=>a.legacyAnalysis)).length};
+  return (n.profiles||n.ratings||n.analysis)?n:null;
+}
+async function legacyMigrate(stubs){
+  const sc=LEG.scan,now=Date.now(),cnt={members:0,votes:0,analysis:0,stubs:0};
+  const ok=await persist(async()=>{
+    for(const {id,data:p} of sc.profiles){
+      if(S.members[id])continue;
+      const m={name:String(p.name||'عضو بدون نام'),jobTitle:'',jobStatus:'',hoursPerWeek:toNum(p.hours),teamRoles:(Array.isArray(p.roles)?p.roles:[]).filter(r=>TEAMROLE.some(t=>t[0]===r)),skills:[],projects:[],industries:'',workHistory:'',
+        interests:(Array.isArray(p.sectors)?p.sectors:[]).map(x=>LCATS[x]).filter(Boolean).join('، '),network:String(p.network||''),clientAccess:'',
+        legacy:{skillsText:String(p.skills||''),presence:p.presence||'',abroad:p.abroad||'',growth:p.growth||null,notes:String(p.notes||'')},migratedFrom:'v1',createdAt:p.updatedAt||now,updatedAt:now};
+      const pv={capital:toNum(p.capital),maxLoss:null,risk:Number(p.risk)||null,horizon:Number(p.horizon)||null,quit:p.quit||'',constraints:[p.redlines,p.notes].filter(Boolean).join('\n'),contact:'',updatedAt:now,migratedFrom:'v1'};
+      await dbSet('members',id,m);await dbSet('members_private',id,pv);S.members[id]=m;S.members_private[id]=pv;cnt.members++;
+    }
+    for(const {id,data:r} of sc.ratings){
+      if(S.votes[id])continue;
+      const v={};Object.entries(r.votes||{}).forEach(([iid,x])=>{if(!S.ideas[iid]||!x)return;const o={};if(x.i)o.interest=Number(x.i);if(x.j==='yes'||x.j==='maybe'||x.j==='no')o.join=x.j;if(Object.keys(o).length)v[iid]=o});
+      if(!Object.keys(v).length)continue;
+      const doc={votes:v,name:String(r.name||''),updatedAt:now,migratedFrom:'v1'};await dbSet('votes',id,doc);S.votes[id]=doc;cnt.votes++;
+    }
+    for(const {id,data:a} of sc.analysis){
+      if(!S.ideas[id])continue;const idea=clone(ideaOf(id));idea.aiNotes=Array.isArray(idea.aiNotes)?idea.aiNotes:[];
+      if(idea.aiNotes.some(n=>n.legacyAnalysis))continue;
+      idea.aiNotes.push({text:[a.summary&&('تحلیل بازار: '+a.summary),a.risks&&('ریسک‌ها: '+a.risks),a.next&&('آزمون پیشنهادی: '+a.next)].filter(Boolean).join('\n')||'(بدون متن)',source:'Claude (نسخه‌ی قبلی)',date:a.updatedAt||now,reviewed:false,legacyAnalysis:true,legacy:{market:a.market??null,risk:a.risk??null,capital:a.capital??null,hours:a.hours??null,presence:a.presence||null,sources:Array.isArray(a.sources)?a.sources.map(String):[]}});
+      idea.updatedAt=now;await dbSet('ideas',id,idea);S.ideas[id]=idea;cnt.analysis++;
+    }
+    if(stubs){LNAMES.forEach((n,i)=>{});for(let i=0;i<LNAMES.length;i++){const n=LNAMES[i];if(Object.values(S.members).some(m=>m.name===n))continue;const id='legacy_'+i;
+      const m={name:n,jobTitle:'',jobStatus:'',hoursPerWeek:null,teamRoles:[],skills:[],projects:[],industries:'',workHistory:'',interests:'',network:'',clientAccess:'',stub:true,migratedFrom:'v1',createdAt:now,updatedAt:now};
+      await dbSet('members',id,m);S.members[id]=m;cnt.stubs++}}
+    const meta={schema:3,legacyMigratedAt:now,counts:cnt};await dbSet('config','meta',meta);S.config.meta=meta;
+  });
+  return ok?cnt:null;
+}
+
+/* ================= sample data ================= */
+async function addSample(){
+  const now=Date.now(), mk=(id,name,job,status,hrs,skills,ind,p)=>({id:'smp_'+id,pub:{name,jobTitle:job,jobStatus:status,hoursPerWeek:hrs,teamRoles:[],skills,projects:[],industries:ind,workHistory:'',interests:'',network:'',clientAccess:'some',sample:true,createdAt:now,updatedAt:now},priv:p});
+  const M=[mk('m1','عضو نمونه ۱','مهندس برق صنعتی','full',8,[{name:'طراحی تابلو برق',level:4,evidence:'۱۰ سال سابقه'},{name:'مدیریت پروژه',level:3,evidence:''}],'انرژی، صنعت',{capital:300,maxLoss:150,risk:3,horizon:6,quit:'later'}),
+    mk('m2','عضو نمونه ۲','مهندس نرم‌افزار','part',10,[{name:'برنامه‌نویسی وب',level:5,evidence:'چند محصول در بازار'},{name:'فروش',level:2,evidence:''}],'دیجیتال',{capital:100,maxLoss:60,risk:4,horizon:12,quit:'no'}),
+    mk('m3','عضو نمونه ۳','مهندس عمران','full',6,[{name:'مدیریت پروژه',level:4,evidence:'۸ پروژه ساختمانی'},{name:'فروش',level:3,evidence:''}],'ساختمان',{capital:200,maxLoss:100,risk:2,horizon:6,quit:'no'})];
+  const I=[{id:'smp_i1',title:'پایش مصرف انرژی کارخانه‌های کوچک',problem:'قبض برق بالا و نبود داده از مصرف هر خط تولید',target:'کارخانه‌های ۲۰ تا ۱۰۰ نفره',solution:'نصب حسگر و داشبورد ماهانه',product:'خدمت نصب و اشتراک',revenue:'نصب + اشتراک ماهانه',industry:'انرژی',geo:'iran',advantage:'تخصص برق صنعتی',capital:250,launchWeeks:10,weeklyHours:12,competitors:'چند شرکت بزرگ',requiredSkills:'طراحی تابلو برق، برنامه‌نویسی وب',risks:'چرخه‌ی فروش طولانی',assumptions:[{text:'کارخانه‌ها حاضرند ماهانه ۳ میلیون بدهند',status:'untested'}],evidence:[{text:'گفت‌وگوی غیررسمی با ۳ مدیر',type:'init',source:'شبکه شخصی'}]},
+    {id:'smp_i2',title:'ابزار برآورد هزینه برای پیمانکاران ساختمانی',problem:'برآورد دستی و پرخطا',target:'پیمانکاران کوچک',solution:'اپ وب برآورد',product:'اشتراک نرم‌افزار',revenue:'اشتراک',industry:'ساختمان',geo:'iran',advantage:'',capital:80,launchWeeks:16,weeklyHours:8,competitors:'',requiredSkills:'برنامه‌نویسی وب، مدیریت پروژه',risks:'',assumptions:[],evidence:[]},
+    {id:'smp_i3',title:'خدمات مشاوره‌ی دورکاری برای شرکت‌های همسایه',problem:'کمبود مهندس',target:'شرکت‌های همسایه',solution:'',product:'',revenue:'',industry:'',geo:'nb',advantage:'',capital:null,launchWeeks:null,weeklyHours:null,competitors:'',requiredSkills:'',risks:'',assumptions:[],evidence:[]}].map(i=>({status:'new',archived:false,sample:true,createdAt:now,updatedAt:now,...i}));
+  const E={smp_i1:{demand:{v:6,note:''},speed:{v:4,note:''},margin:{v:7,note:''},growth:{v:6,note:''},risk:{v:5,note:''}},smp_i2:{demand:{v:5,note:''},speed:{v:3,note:''},margin:{v:8,note:'نرم‌افزار حاشیه‌ی بالایی دارد.'},growth:{v:9,note:'قابل تکثیر بدون هزینه‌ی خطی.'},risk:{v:6,note:''}}};
+  const V={smp_m1:{smp_i1:{interest:9,join:'yes',hours:6},smp_i2:{interest:5,join:'maybe'}},smp_m2:{smp_i1:{interest:7,join:'yes',hours:5},smp_i2:{interest:9,join:'yes',hours:8}},smp_m3:{smp_i2:{interest:6,join:'maybe'},smp_i3:{interest:4,join:'no'}}};
+  await persist(async()=>{
+    for(const m of M){await dbSet('members',m.id,m.pub);await dbSet('members_private',m.id,{...m.priv,updatedAt:now,sample:true});if(ENV.mode!=='local'){S.members[m.id]=m.pub;S.members_private[m.id]=m.priv}}
+    for(const i of I){await dbSet('ideas',i.id,i);if(ENV.mode!=='local')S.ideas[i.id]=i}
+    for(const [k,s] of Object.entries(E)){await dbSet('evals',k,{ideaId:k,scores:s,updatedAt:now,sample:true})}
+    for(const [k,v] of Object.entries(V)){await dbSet('votes',k,{votes:v,updatedAt:now,name:'',sample:true})}
+  });render();
+}
+async function rmSample(){
+  if(!await ask({title:'حذف داده‌ی نمونه',msg:'فقط موارد برچسب «نمونه» حذف می‌شوند.',ok:'حذف نمونه‌ها',danger:true}))return;
+  await persist(async()=>{for(const c of ['members','members_private','ideas','evals','votes','tests'])for(const id of Object.keys(S[c]))if(id.startsWith('smp_'))await dbDel(c,id)});render();
+}
+
+/* ================= events ================= */
+document.addEventListener('click',async e=>{
+  const nav=e.target.closest('[data-nav]');
+  if(nav){if(!(await leaveGuard()))return;go(nav.dataset.nav,{force:true});return}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act,id=b.dataset.id;
+  switch(a){
+    case 'sample':return addSample();
+    case 'rmSample':return rmSample();
+    case 'backList':case 'cancelForm':{
+      if(UI.dirty&&UI.draft&&!(await ask({title:'تغییرات ذخیره‌نشده',msg:'اگر خارج شوید، تغییرات این فرم از بین می‌رود.',ok:'خروج بدون ذخیره',danger:true})))return;
+      if(UI.view==='valid'){UI.testDraft=null}
+      const keepId=(a==='cancelForm'&&UI.id&&UI.id!=='new'&&UI.view!=='valid')?UI.id:null;
+      Object.assign(UI,{draft:null,errors:{},dirty:false,id:keepId,tab:keepId?'overview':null,evalDraft:null,mineNew:false});render();return}
+    case 'sec':UI.sec=b.dataset.v;return render();
+    case 'tog':{const arr=getPath(UI.draft,b.dataset.b)||[];const v=b.dataset.v,i=arr.indexOf(v);i>=0?arr.splice(i,1):arr.push(v);setPath(UI.draft,b.dataset.b,arr);UI.dirty=true;return render()}
+    case 'pick':{const p=b.dataset.b,cur=getPath(UI.draft,p);let v=b.dataset.v;if(/^\d+$/.test(v))v=Number(v);setPath(UI.draft,p,String(cur)===String(v)?(typeof v==='number'?null:''):v);UI.dirty=true;delete UI.errors[p];return render()}
+    case 'addItem':{const l=b.dataset.list;const arr=UI.draft[l]=UI.draft[l]||[];arr.push({skills:{name:'',level:3,evidence:''},projects:{title:'',desc:'',result:''},assumptions:{text:'',status:'untested'},evidence:{text:'',type:'hyp',source:''}}[l]);UI.dirty=true;render();
+      const last=$$('#main .rowitem').pop();const f=last&&last.querySelector('input,textarea');if(f)f.focus();return}
+    case 'keyAsm':{const i=Number(b.dataset.i),was=UI.draft.assumptions[i].key;UI.draft.assumptions.forEach(x=>x.key=false);if(!was)UI.draft.assumptions[i].key=true;UI.dirty=true;return render()}
+    case 'addAi':case 'revAi':case 'delAi':{
+      const i=clone(ideaOf(id));i.aiNotes=Array.isArray(i.aiNotes)?i.aiNotes:[];
+      if(a==='addAi'){const t=String(($('#ai_text')||{}).value||'').trim(),er=$('#ai_err');
+        if(!t){er.innerHTML=`<div class="err" role="alert">${ico('alert')}متن را بنویسید.</div>`;return}
+        if(t.length>5000){er.innerHTML=`<div class="err" role="alert">${ico('alert')}متن بیش از ۵۰۰۰ نویسه است.</div>`;return}
+        i.aiNotes.push({text:t,source:$('#ai_src').value,date:Date.now(),reviewed:false})}
+      else{const k=Number(b.dataset.i);if(a==='delAi')i.aiNotes.splice(k,1);else i.aiNotes[k].reviewed=!i.aiNotes[k].reviewed}
+      i.updatedAt=Date.now();if(await persist(async()=>{await dbSet('ideas',id,i);if(ENV.mode!=='local')S.ideas[id]=i}))render();return}
+    case 'newTestFor':{const idea=ideaOf(id),key=(idea.assumptions||[]).find(x=>x.key&&x.text);UI.view='valid';UI.testDraft={ideaId:id,method:'',assumption:key?key.text:'',customerGroup:'',metric:'',failMetric:'',cost:null,days:null,deadline:'',owner:'',status:'planned',result:'',decision:''};UI.draft=UI.testDraft;UI.errors={};UI.id=null;return render()}
+    case 'legacySkills':{const have=(UI.draft.skills||[]).map(x=>norm(x.name));UI.draft.skills=UI.draft.skills||[];tags(UI.draft.legacy.skillsText).forEach(n=>{if(!have.includes(norm(n)))UI.draft.skills.push({name:n,level:null,evidence:''})});UI.dirty=true;return render()}
+    case 'rmItem':UI.draft[b.dataset.list].splice(Number(b.dataset.i),1);UI.dirty=true;return render();
+    /* members */
+    case 'newMember':UI.view='members';Object.assign(UI,{id:'new',draft:blankMember(),sec:'basic',errors:{},dirty:false,mineNew:false});return render();
+    case 'newMine':{UI.view='members';const d=blankMember();Object.assign(UI,{id:'new',draft:d,sec:'basic',errors:{},dirty:false,mineNew:true});return render()}
+    case 'openMember':UI.id=id;UI.draft=null;return render();
+    case 'editMember':{const m=clone(S.members[id]);m._p=clone(S.members_private[id]||{capital:null,maxLoss:null,risk:null,horizon:null,quit:'',constraints:'',contact:''});UI.view='members';Object.assign(UI,{id,draft:m,sec:'basic',errors:{},dirty:false});return render()}
+    case 'saveMember':return saveMember();
+    case 'delMember':{if(!await ask({title:'حذف عضو',msg:'پروفایل و اطلاعات خصوصی این عضو و رأی‌های او حذف می‌شود. این کار بازگشت‌پذیر نیست.',ok:'حذف عضو',danger:true}))return;
+      if(await persist(async()=>{await dbDel('members',id);await dbDel('members_private',id);await dbDel('votes',id);if(ENV.mode!=='local'){delete S.members[id];delete S.members_private[id];delete S.votes[id]}})){Object.assign(UI,{id:null,draft:null,dirty:false});render()}return}
+    /* ideas */
+    case 'newIdea':UI.view='ideas';Object.assign(UI,{id:'new',tab:'edit',draft:blankIdea(),sec:'core',errors:{},dirty:false});return render();
+    case 'openIdea':if(!(await leaveGuard()))return;UI.view='ideas';Object.assign(UI,{id,tab:b.dataset.tab||'overview',draft:null,errors:{},dirty:false,evalDraft:null,votePick:null});render();window.scrollTo(0,0);return;
+    case 'editIdea':Object.assign(UI,{view:'ideas',id,tab:'edit',draft:clone(ideaOf(id)),sec:'core',errors:{},dirty:false});return render();
+    case 'saveIdea':return saveIdea();
+    case 'itab':if(!(await leaveGuard()))return;Object.assign(UI,{tab:b.dataset.v,errors:{},evalDraft:null,draft:null,dirty:false});return render();
+    case 'archIdea':{const i=clone(S.ideas[id]);i.archived=!i.archived;i.updatedAt=Date.now();if(await persist(async()=>{await dbSet('ideas',id,i);if(ENV.mode!=='local')S.ideas[id]=i}))render();return}
+    case 'delIdea':{if(!await ask({title:'حذف ایده',msg:'ایده همراه با ارزیابی، رأی‌ها و آزمون‌هایش حذف می‌شود. اگر فقط می‌خواهید کنار بگذارید، آرشیو کنید.',ok:'حذف ایده',danger:true}))return;
+      if(await persist(async()=>{await dbDel('ideas',id);await dbDel('evals',id);for(const [t,d] of Object.entries(S.tests))if(d.ideaId===id)await dbDel('tests',t);
+        for(const [mk,d] of Object.entries(S.votes))if(d.votes&&d.votes[id]&&(ENV.admin||mk===myKey())){const c=clone(d);delete c.votes[id];await dbSet('votes',mk,c);if(ENV.mode!=='local')S.votes[mk]=c}
+        if(ENV.mode!=='local'){delete S.ideas[id];delete S.evals[id]}})){Object.assign(UI,{id:null,tab:null});render()}return}
+    /* eval */
+    case 'score':{const c=b.dataset.c,v=b.dataset.v===''?null:Number(b.dataset.v);const D=UI.evalDraft;D[c]=Object.assign({},D[c]||{},{v});delete UI.errors['n_'+c];render();const el=$('#crit_'+c);if(el)el.scrollIntoView({block:'nearest'});return}
+    case 'resetEval':UI.evalDraft=null;UI.errors={};return render();
+    case 'saveEval':return saveEval(id);
+    case 'cmp':{const s=UI.compare,i=s.indexOf(id);if(i>=0)s.splice(i,1);else if(s.length<4)s.push(id);else s.shift(),s.push(id);return render()}
+    case 'vote':{const mk=UI.votePick&&S.members[UI.votePick]?UI.votePick:defVoter();const v=b.dataset.k==='interest'?Number(b.dataset.v):b.dataset.v;
+      const cur=((S.votes[mk]||{}).votes||{})[UI.id]||{};setVote(mk,UI.id,{[b.dataset.k]:cur[b.dataset.k]===v?null:v});return}
+    /* tests */
+    case 'newTest':UI.testDraft={ideaId:'',method:'',assumption:'',metric:'',deadline:'',owner:'',status:'planned',result:''};UI.draft=UI.testDraft;UI.errors={};return render();
+    case 'editTest':UI.testDraft=Object.assign({_id:id},clone(S.tests[id]));UI.draft=UI.testDraft;UI.errors={};return render();
+    case 'saveTest':return saveTest();
+    case 'useAssumption':UI.testDraft.assumption=b.dataset.v;return render();
+    case 'tf':UI.tfilter=b.dataset.v;return render();
+    case 'delTest':{if(!await ask({title:'حذف آزمون',msg:'این آزمون حذف می‌شود.',ok:'حذف',danger:true}))return;if(await persist(async()=>{await dbDel('tests',id);if(ENV.mode!=='local')delete S.tests[id]}))render();return}
+    case 'logEvidence':{const t=clone(S.tests[id]),idea=clone(S.ideas[t.ideaId]);idea.evidence=(idea.evidence||[]).concat([{text:`${t.assumption}: ${t.result}`,type:'val',source:'آزمون اعتبارسنجی ('+(lab(TSTATUS,t.status))+')'}]);idea.updatedAt=Date.now();t.logged=true;
+      if(await persist(async()=>{await dbSet('ideas',t.ideaId,idea);await dbSet('tests',id,t);if(ENV.mode!=='local'){S.ideas[t.ideaId]=idea;S.tests[id]=t}}))render();return}
+    /* settings */
+    case 'normW':{const W=UI.weightsDraft,s=Object.values(W).reduce((a,x)=>a+(Number(x)||0),0)||1;let acc=0;const ids=CRIT.map(c=>c.id);ids.forEach((k,i)=>{if(i<ids.length-1){W[k]=Math.round((Number(W[k])||0)/s*1000)/10;acc+=W[k]}else W[k]=Math.round((100-acc)*10)/10});return render()}
+    case 'defW':UI.weightsDraft=Object.assign({},DEFW);return render();
+    case 'saveW':{const W={};CRIT.forEach(c=>W[c.id]=Number(UI.weightsDraft[c.id])||0);const doc={weights:W,updatedAt:Date.now()};if(await persist(async()=>{await dbSet('config','main',doc);if(ENV.mode!=='local')S.config.main=doc}))UI.weightsDraft=null,render();return}
+    case 'copyPrompt':return copyPrompt();
+    case 'legacyGo':{const c=await legacyMigrate(!!($('#legStubs')&&$('#legStubs').checked));if(c){render();const m=$('#legMsg');if(m)m.textContent=`انتقال انجام شد: ${fa(c.members)} عضو، ${fa(c.votes)} فهرست رأی، ${fa(c.analysis)} تحلیل${c.stubs?'، '+fa(c.stubs)+' پروفایل ناقص':''}.`}return}
+    case 'expJson':return expJson();
+    case 'expCsv':return expCsv();
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='q'){UI.q=t.value;const pos=t.selectionStart;render();const n=$('#q');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}
+  if(t.dataset&&t.dataset.note&&UI.evalDraft){const c=t.dataset.note;UI.evalDraft[c]=Object.assign({},UI.evalDraft[c]||{},{note:t.value});delete UI.errors['n_'+c];const f=t.closest('.fld');if(f){f.classList.remove('has-err');const er=f.querySelector('.err');if(er)er.remove()}}
+  if(t.dataset&&t.dataset.w&&UI.weightsDraft){UI.weightsDraft[t.dataset.w]=toNum(t.value);const W=UI.weightsDraft;const sum=Object.values(W).reduce((a,b)=>a+(Number(b)||0),0),ok=Math.abs(sum-100)<.001;const tag=$('.ph .tag');if(tag){tag.className='tag t-'+(ok?'good':'bad');tag.innerHTML=`${ico(ok?'check':'alert')}مجموع ${fa(sum,1)} از ۱۰۰`}$$('[data-act=saveW]').forEach(x=>x.disabled=!ok)}
+  if(t.id==='vh'){const mk=UI.votePick&&S.members[UI.votePick]?UI.votePick:defVoter();const n=toNum(t.value);const msg=$('#vhe');
+    if(t.value!==''&&(isNaN(n)||n<0||n>80)){msg.textContent='عددی بین ۰ تا ۸۰ وارد کنید.';msg.className='err';return}msg.textContent='';
+    const cur=clone(S.votes[mk]||{votes:{}});cur.votes=cur.votes||{};cur.votes[UI.id]=Object.assign({},cur.votes[UI.id]||{},{hours:n==null?undefined:n});if(n==null)delete cur.votes[UI.id].hours;cur.updatedAt=Date.now();S.votes[mk]=cur;clearTimeout(voteT);voteT=setTimeout(()=>persist(()=>dbSet('votes',mk,cur)),600)}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='stageSel'){UI.stage=t.value;render()}
+  if(t.id==='sortSel'){UI.sort=t.value;render()}
+  if(t.id==='archChk'){UI.showArch=t.checked;render()}
+  if(t.id==='vp'){UI.votePick=t.value;render()}
+  if(t.dataset&&t.dataset.tstatus){const id=t.dataset.tstatus,o=clone(S.tests[id]);o.status=t.value;o.updatedAt=Date.now();persist(async()=>{await dbSet('tests',id,o);if(ENV.mode!=='local')S.tests[id]=o}).then(()=>render())}
+  if(t.id==='impFile'&&t.files[0]){importJson(t.files[0]);t.value=''}
+  if(t.dataset&&t.dataset.b&&t.tagName==='SELECT'&&UI.view==='valid'&&t.dataset.b==='ideaId')render();
+});
+window.addEventListener('beforeunload',e=>{if(UI.dirty&&UI.draft){e.preventDefault();e.returnValue=''}});
+
+/* ================= boot ================= */
+(async function boot(){
+  try{const v=sessionStorage.getItem('radar2:view');if(v&&PAGE_TITLE[v])UI.view=v}catch(e){}
+  let db=null,user=null;
+  try{if(window.claude&&window.claude.use){db=await window.claude.use('db');user=await window.claude.use('user')}}catch(e){db=null}
+  let uid=null;try{uid=user&&await user.id()}catch(e){}
+  if(db&&uid){
+    ENV.mode='shared';ENV.db=db;ENV.uid=uid;
+    try{ENV.isOwner=!!(await user.isOwner());ENV.admin=ENV.isOwner||!!(await user.canEdit())}catch(e){ENV.admin=false}
+    try{const w=await user.can('data.write');ENV.canWrite=w!==false}catch(e){}
+    let pend=COLS.length+1;const first=()=>{if(--pend<=0&&!UI.ready){UI.ready=true;render()}};
+    COLS.forEach(c=>{let seen=false;db.collection(c).onSnapshot(s=>{S[c]=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));if(!seen){seen=true;first()}schedule()},()=>{if(!seen){seen=true;first()}})});
+    let seenP=false;const pcb=()=>{if(!seenP){seenP=true;first()}schedule()};
+    if(ENV.admin)db.collection('members_private').onSnapshot(s=>{S.members_private=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));pcb()},pcb);
+    else db.doc('members_private/'+uid).onSnapshot(d=>{S.members_private=d.exists?{[uid]:d.data()}:{};pcb()},pcb);
+    setTimeout(()=>{if(!UI.ready){UI.ready=true;render()}},5000);
+    if(ENV.isOwner)legacyScan().then(()=>schedule());
+  }else{
+    ENV.mode='local';ENV.admin=true;ENV.canWrite=true;ENV.uid='local';
+    ['members','members_private','ideas','evals','votes','tests','config'].forEach(c=>S[c]=L.get(c));
+    UI.ready=true;
+  }
+  render();
+})();
+})();
+</script>
+
+</body></html>
