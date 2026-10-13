@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>رادار ایده</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -212,6 +211,164 @@ details.h summary{cursor:pointer;font-weight:700;color:var(--navy)}
 <div id="dlg"></div>
 
 <script>
+/* ===== اتصال به Supabase (جایگزین دیتابیس Claude) ===== */
+(function(){
+'use strict';
+var SB_URL='https://smtfabsdyqxrylbzruxl.supabase.co';
+var SB_KEY='sb_publishable_Eji2XA3bYpuQn7DjZVf7YA_fFlCCerI'; /* کلید عمومی؛ فقط همین کلید در صفحه باشد */
+var H={apikey:SB_KEY,'Content-Type':'application/json'};
+var ls={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+async function rest(path,opt){
+  var r=await fetch(SB_URL+'/rest/v1/'+path,Object.assign({headers:H},opt||{}));
+  var t='';try{t=await r.text()}catch(e){}
+  if(!r.ok){var er=new Error(t||r.statusText);er.code=r.status;throw er}
+  return t?JSON.parse(t):null;
+}
+var rpc=function(fn,args){return rest('rpc/'+fn,{method:'POST',body:JSON.stringify(args)})};
+var up=function(table,key,row){return rest(table+'?on_conflict='+key,{method:'POST',headers:Object.assign({},H,{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(row)})};
+var del=function(table,col,val){return rest(table+'?'+col+'=eq.'+encodeURIComponent(val),{method:'DELETE',headers:Object.assign({},H,{Prefer:'return=minimal'})})};
+
+var num=function(v){if(v==null||v==='')return null;var n=Number(v);return isFinite(n)?n:null};
+var str=function(v){return(v==null||v==='')?null:String(v)};
+var arr=function(v){return Array.isArray(v)?v:[]};
+var pick=function(v,l){return l.indexOf(v)>=0?v:null};
+var JOBS=['full','part','free','other'],CLIENTS=['none','few','some','strong'],GEOS=['iran','nb','both','global'],ISTAT=['new','validating','paused','launched'],TST=['planned','running','passed','failed'];
+var ms=function(t){var n=t?Date.parse(t):NaN;return isNaN(n)?undefined:n};
+var clean=function(o){Object.keys(o).forEach(function(k){if(o[k]===undefined)delete o[k]});return o};
+
+var T={
+ members:{table:'members',key:'id',
+  to:function(id,d){return{id:id,name:d.name||'',job_title:str(d.jobTitle),job_status:pick(d.jobStatus,JOBS),hours_per_week:num(d.hoursPerWeek),team_roles:arr(d.teamRoles),skills:arr(d.skills),projects:arr(d.projects),industries:str(d.industries),work_history:str(d.workHistory),interests:str(d.interests),network:str(d.network),client_access:pick(d.clientAccess,CLIENTS),doc:d,updated_at:new Date().toISOString()}},
+  from:function(r){return Object.assign(clean({name:r.name,jobTitle:r.job_title||'',jobStatus:r.job_status||'',hoursPerWeek:r.hours_per_week,teamRoles:r.team_roles||[],skills:r.skills||[],projects:r.projects||[],industries:r.industries||'',workHistory:r.work_history||'',interests:r.interests||'',network:r.network||'',clientAccess:r.client_access||'',createdAt:ms(r.created_at),updatedAt:ms(r.updated_at)}),r.doc||{})},
+  id:function(r){return r.id}},
+ ideas:{table:'ideas',key:'id',
+  to:function(id,d){return{id:id,title:d.title||'',proposer_name:str(d.proposer),problem:str(d.problem),target:str(d.target),solution:str(d.solution),product:str(d.product),revenue:str(d.revenue),industry:str(d.industry),geo:pick(d.geo,GEOS),advantage:str(d.advantage),competitors:str(d.competitors),required_skills:str(d.requiredSkills),risks:str(d.risks),capital:num(d.capital),launch_weeks:num(d.launchWeeks),weekly_hours:num(d.weeklyHours),status:pick(d.status,ISTAT)||'new',archived:!!d.archived,assumptions:arr(d.assumptions),evidence:arr(d.evidence),market:d.market||{},ai_notes:arr(d.aiNotes),created_by:str(d.createdBy),doc:d,updated_at:new Date().toISOString()}},
+  from:function(r){return Object.assign(clean({title:r.title,proposer:r.proposer_name||undefined,problem:r.problem||'',target:r.target||'',solution:r.solution||'',product:r.product||'',revenue:r.revenue||'',industry:r.industry||'',geo:r.geo||'',advantage:r.advantage||'',competitors:r.competitors||'',requiredSkills:r.required_skills||'',risks:r.risks||'',capital:r.capital,launchWeeks:r.launch_weeks,weeklyHours:r.weekly_hours,status:r.status||'new',archived:!!r.archived,assumptions:r.assumptions||[],evidence:r.evidence||[],market:r.market||{},aiNotes:r.ai_notes||[],createdBy:r.created_by||undefined,createdAt:ms(r.created_at),updatedAt:ms(r.updated_at)}),r.doc||{})},
+  id:function(r){return r.id}},
+ evals:{table:'evals',key:'idea_id',
+  to:function(id,d){return{idea_id:id,scores:d.scores||{},doc:d,updated_at:new Date().toISOString()}},
+  from:function(r){return r.doc||{scores:r.scores||{}}},id:function(r){return r.idea_id}},
+ tests:{table:'tests',key:'id',
+  to:function(id,d){return{id:id,idea_id:d.ideaId,status:pick(d.status,TST)||'planned',data:d,updated_at:new Date().toISOString()}},
+  from:function(r){return r.data||{}},id:function(r){return r.id}},
+ config:{table:'config',key:'key',
+  to:function(id,d){return{key:id,value:d,updated_at:new Date().toISOString()}},
+  from:function(r){return r.value||{}},id:function(r){return r.key}}
+};
+
+/* ---- هویت: بدون ورود؛ شناسه‌ی تصادفی در همین مرورگر. مدیر = کسی که رمز مدیر را وارد کرده ---- */
+function rand(n){var s='',c='abcdefghijklmnopqrstuvwxyz0123456789';for(var i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+var uid=ls.get('radar_uid');if(!uid){uid='u_'+rand(22);ls.set('radar_uid',uid)}
+var pin=ls.get('radar_pin');
+var adminP=null;
+function isAdmin(){if(!adminP)adminP=(async function(){if(!pin)return false;try{return!!(await rpc('admin_check',{p_pin:pin}))}catch(e){return false}})();return adminP}
+
+/* ---- خواندن هر مجموعه ---- */
+async function fetchAll(c){
+  var out={};
+  if(c==='votes'){
+    var rows=await rest('votes?select=*&limit=10000');
+    rows.forEach(function(r){var m=out[r.member_id]||(out[r.member_id]={votes:{}});m.votes[r.idea_id]=clean({interest:r.interest==null?undefined:r.interest,join:r.join_choice||undefined,hours:r.hours==null?undefined:Number(r.hours)});var t=ms(r.updated_at);if(t&&(!m.updatedAt||t>m.updatedAt))m.updatedAt=t});
+    return out;
+  }
+  if(c==='members_private'){
+    if(!(await isAdmin()))return out;
+    var pr=await rpc('priv_all',{p_pin:pin});
+    (pr||[]).forEach(function(r){out[r.member_id]=Object.assign(clean({capital:r.capital==null?undefined:Number(r.capital),maxLoss:r.max_loss==null?undefined:Number(r.max_loss),risk:r.risk==null?undefined:r.risk,horizon:r.horizon==null?undefined:r.horizon,quit:r.quit||undefined,constraints:r.constraints||undefined,contact:r.contact||undefined}),r.doc||{})});
+    return out;
+  }
+  var m=T[c];if(!m)return out;
+  var rs=await rest(m.table+'?select=*&limit=5000');
+  rs.forEach(function(r){out[m.id(r)]=m.from(r)});
+  return out;
+}
+
+/* ---- نوشتن ---- */
+async function writeDoc(c,id,d){
+  if(c==='votes'){
+    var v=(d&&d.votes)||{},keep=[];
+    var rows=[];Object.keys(v).forEach(function(iid){var x=v[iid]||{};var it=num(x.interest),jn=pick(x.join,['yes','maybe','no']),h=num(x.hours);if(it==null&&!jn&&h==null)return;keep.push(iid);rows.push({member_id:id,idea_id:iid,interest:(it>=1&&it<=10)?it:null,join_choice:jn,hours:h,updated_at:new Date().toISOString()})});
+    if(rows.length)await rest('votes?on_conflict=member_id,idea_id',{method:'POST',headers:Object.assign({},H,{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(rows)});
+    var f='votes?member_id=eq.'+encodeURIComponent(id)+(keep.length?'&idea_id=not.in.('+keep.map(encodeURIComponent).join(',')+')':'');
+    await rest(f,{method:'DELETE',headers:Object.assign({},H,{Prefer:'return=minimal'})});
+    return;
+  }
+  if(c==='members_private'){
+    await rpc('priv_set',{p_member:id,p_doc:d});
+    if(id===uid)ls.set('radar_priv_'+uid,JSON.stringify(d));
+    return;
+  }
+  var m=T[c];if(!m)return;
+  await up(m.table,m.key,m.to(id,d));
+}
+async function deleteDoc(c,id){
+  if(c==='votes')return del('votes','member_id',id);
+  if(c==='members_private'){await rpc('priv_del',{p_member:id});if(id===uid)ls.del('radar_priv_'+uid);return}
+  var m=T[c];if(!m)return;
+  return del(m.table,m.key,id);
+}
+
+/* ---- شبیه‌ساز onSnapshot با بازخوانی دوره‌ای ---- */
+var listeners={},last={};
+function snap(c,data){return{docs:Object.keys(data).map(function(k){return{id:k,data:function(){return JSON.parse(JSON.stringify(data[k]))}}})}}
+async function refresh(c){
+  var ls_=listeners[c]||[];if(!ls_.length)return;
+  try{
+    var data=await fetchAll(c),sig=JSON.stringify(data);
+    if(sig===last[c])return;last[c]=sig;
+    ls_.forEach(function(l){if(l.kind==='col')l.cb(snap(c,data))});
+  }catch(e){ls_.forEach(function(l){if(l.err&&!l.failed){l.failed=true;l.err(e)}})}
+}
+function sub(c,l){(listeners[c]||(listeners[c]=[])).push(l);delete last[c];refresh(c)}
+setInterval(function(){if(document.hidden)return;Object.keys(listeners).forEach(refresh)},8000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)Object.keys(listeners).forEach(refresh)});
+
+function docRef(path){
+  var p=path.split('/'),c=p[0],id=p[1];
+  return{
+    set:async function(d){await writeDoc(c,id,d);delete last[c];refresh(c)},
+    delete:async function(){await deleteDoc(c,id);delete last[c];refresh(c)},
+    get:async function(){var all=await fetchAll(c);return{exists:id in all,id:id,data:function(){return all[id]}}},
+    onSnapshot:function(cb,err){
+      if(c==='members_private'){var raw=ls.get('radar_priv_'+id),d=null;try{d=raw?JSON.parse(raw):null}catch(e){}
+        setTimeout(function(){cb({exists:!!d,id:id,data:function(){return d}})},0);return function(){}}
+      sub(c,{kind:'col',cb:function(s){var f=s.docs.filter(function(x){return x.id===id})[0];cb({exists:!!f,id:id,data:function(){return f?f.data():undefined}})},err:err});return function(){}}
+  };
+}
+var db={
+  doc:docRef,
+  collection:function(c){return{
+    get:async function(){return snap(c,await fetchAll(c))},
+    onSnapshot:function(cb,err){sub(c,{kind:'col',cb:cb,err:err});return function(){}}
+  }}
+};
+var user={
+  id:async function(){return uid},
+  me:async function(){return{id:uid,name:''}},
+  isOwner:isAdmin,canEdit:isAdmin,
+  can:async function(){return true},
+  profiles:async function(ids){var o={};(ids||[]).forEach(function(i){o[i]={name:''}});return o}
+};
+var downloads={save:async function(o){var b=new Blob([o.data],{type:'application/octet-stream'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=o.filename||'file';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)}};
+window.claude={use:async function(n){return n==='db'?db:n==='user'?user:n==='downloads'?downloads:null}};
+
+/* ---- دکمه‌ی ورود مدیر ---- */
+document.addEventListener('DOMContentLoaded',function(){
+  var b=document.createElement('button');b.type='button';
+  b.style.cssText='position:fixed;left:10px;bottom:10px;z-index:60;font:12px Vazirmatn,Tahoma,sans-serif;padding:5px 10px;border-radius:8px;border:1px solid #888;background:rgba(255,255,255,.85);color:#222;cursor:pointer;opacity:.7';
+  isAdmin().then(function(a){b.textContent=a?'خروج از حالت مدیر':'ورود مدیر'});b.textContent='ورود مدیر';
+  b.onclick=async function(){
+    if(await isAdmin()){ls.del('radar_pin');location.reload();return}
+    var p=prompt('رمز مدیر را وارد کنید');if(!p)return;
+    try{if(await rpc('admin_check',{p_pin:p})){ls.set('radar_pin',p);location.reload()}else alert('رمز نادرست است.')}catch(e){alert('ارتباط با دیتابیس برقرار نشد.')}
+  };
+  document.body.appendChild(b);
+});
+})();
+
+</script>
+<script>
 (function(){
 'use strict';
 /* ================= helpers ================= */
@@ -407,7 +564,7 @@ async function dbDel(col,id){
   await ENV.db.doc(col+'/'+id).delete();
 }
 function errMsg(e){const c=e&&e.code;
-  if(c==='invalid_argument')return 'دسترسی نوشتن ندارید. از مالک صفحه بخواهید سطح شما را «Contributor» کند.';
+  if(c==='invalid_argument')return 'دسترسی نوشتن ندارید. از مالک صفحه بخواهید سطح دسترسی شما را بالاتر از «فقط مشاهده» (امکان ویرایش یا تعامل) تنظیم کند.';
   if(c==='quota_exceeded')return 'ظرفیت ذخیره‌سازی پر شده است. چند مورد قدیمی را حذف کنید.';
   if(c==='revoked')return 'دسترسی شما به این صفحه تغییر کرده است. صفحه را دوباره باز کنید.';
   return 'ارتباط با ذخیره‌سازی برقرار نشد. دوباره تلاش کنید.';}
@@ -474,7 +631,7 @@ function renderShell(){
   $('#who').innerHTML=`<span>${ENV.mode==='local'?'حالت محلی (فقط این مرورگر)':ENV.admin?'نقش شما: مدیر':ENV.canWrite?'نقش شما: مشارکت‌کننده':'نقش شما: فقط مشاهده'}</span>`;
   const bn=[];
   if(ENV.mode==='local')bn.push(`<div class="note info">${ico('info')}<span>داده‌ها فقط در همین مرورگر ذخیره می‌شوند و با اعضای دیگر هم‌رسانی نمی‌شوند. برای کار گروهی، صفحه را از طرف مالک به اشتراک بگذارید و سطح اعضا را «Contributor» کنید.</span></div>`);
-  else if(!ENV.canWrite)bn.push(`<div class="note">${ico('lock')}<span>سطح دسترسی شما فقط مشاهده است. برای ثبت اطلاعات از مالک صفحه بخواهید سطح شما را «Contributor» کند.</span></div>`);
+  else if(!ENV.canWrite)bn.push(`<div class="note">${ico('lock')}<span>سطح دسترسی شما فقط مشاهده است. برای ثبت اطلاعات از مالک صفحه بخواهید سطح دسترسی شما را بالاتر از «فقط مشاهده» (امکان ویرایش یا تعامل) تنظیم کند.</span></div>`);
   $('#banner').innerHTML=bn.join('');
 }
 function render(){
@@ -1248,5 +1405,3 @@ window.addEventListener('beforeunload',e=>{if(UI.dirty&&UI.draft){e.preventDefau
 })();
 })();
 </script>
-
-</body></html>
