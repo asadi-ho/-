@@ -304,6 +304,10 @@ function errText(e){
   var k=Object.keys(ERR).filter(function(x){return m.indexOf(x)>=0})[0];
   if(k)return ERR[k];
   if(m.indexOf('invalid_number')>=0)return 'یکی از مبلغ‌ها یا عددها معتبر نیست؛ فقط رقم و بدون منفی وارد کنید.';
+  if(m.indexOf('invalid_risk')>=0)return 'ریسک‌پذیری باید عددی از ۱ تا ۵ باشد.';
+  if(m.indexOf('invalid_horizon')>=0)return 'افق زمانی باید یکی از ۳، ۶، ۱۲ یا ۲۴ ماه باشد.';
+  if(m.indexOf('invalid_max_loss')>=0)return 'حداکثر زیان قابل‌تحمل نمی‌تواند از سرمایه‌ی قابل‌اختصاص بیشتر باشد.';
+  if(m.indexOf('invalid_role')>=0)return 'یکی از نقش‌های انتخاب‌شده معتبر نیست.';
   if(m.indexOf('too_long')>=0)return 'یکی از متن‌ها بیش از حد طولانی است.';
   if(/Invalid login/i.test(m))return 'ایمیل یا رمز عبور اشتباه است.';
   if(/already registered|already been registered/i.test(m))return 'این ایمیل قبلاً ثبت‌نام کرده است؛ وارد شوید.';
@@ -317,8 +321,9 @@ function errText(e){
 /* ================= وضعیت برنامه ================= */
 var sb=null;
 var S={session:null,profile:null,ideas:[],results:{},mine:{},loaded:false,
-  admin:{loaded:false,users:[],members:[],owners:{},legacy:{}},
-  ui:{filter:'all',sort:'new',q:'',tab:'users',authTab:'in',vote:{},busy:false,form:null,errors:{},authMsg:''}};
+  admin:{loaded:false,users:[],members:[],owners:{},legacy:{},details:[]},
+  prof:{loaded:false,mine:{},draft:null,dir:[]},
+  ui:{filter:'all',sort:'new',q:'',tab:'users',metab:'profile',authTab:'in',vote:{},busy:false,form:null,errors:{},authMsg:''}};
 var isAdmin=function(){return !!(S.profile&&S.profile.is_admin&&S.profile.status==='approved')};
 
 /* ================= دسترسی به داده ================= */
@@ -330,8 +335,10 @@ async function loadProfile(){
 async function loadData(){
   var p=await Promise.all([
     sb.from('ideas').select(IDEA_COLS).order('created_at',{ascending:false}),
-    sb.rpc('idea_results'),sb.rpc('my_idea_ids')]);
+    sb.rpc('idea_results'),sb.rpc('my_idea_ids'),sb.rpc('my_profile'),sb.rpc('member_directory')]);
   if(p[0].error)throw p[0].error;if(p[1].error)throw p[1].error;if(p[2].error)throw p[2].error;
+  if(p[3].error)throw p[3].error;if(p[4].error)throw p[4].error;
+  S.prof.mine=p[3].data||{};S.prof.dir=p[4].data||[];if(!S.prof.draft)S.prof.draft=draftFrom(S.prof.mine);S.prof.loaded=true;
   S.ideas=p[0].data||[];
   S.results={};(p[1].data||[]).forEach(function(r){S.results[r.idea_id]=r});
   S.mine={};(p[2].data||[]).forEach(function(id){S.mine[typeof id==='object'?(id.my_idea_ids||id.idea_id):id]=true});
@@ -343,13 +350,14 @@ async function loadAdmin(){
     sb.from('profiles').select('*').order('created_at',{ascending:true}),
     sb.rpc('admin_legacy_members'),
     sb.from('idea_owners').select('*'),
-    sb.from('admin_audit').select('*').order('at',{ascending:false}).limit(100)]);
+    sb.from('admin_audit').select('*').order('at',{ascending:false}).limit(100),
+    sb.rpc('admin_member_details')]);
   p.forEach(function(x){if(x.error)throw x.error});
   S.admin.users=p[0].data||[];
   S.admin.members=(p[1].data||[]).map(function(m){return {id:m.id,name:m.name,job_title:'',pending:m.pending_ballots,owned:m.owned_ideas}});
   S.admin.owners={};(p[2].data||[]).forEach(function(o){S.admin.owners[o.idea_id]=o});
   S.admin.legacy={};S.admin.members.forEach(function(m){S.admin.legacy[m.id]=m.pending});
-  S.admin.audit=p[3].data||[];
+  S.admin.audit=p[3].data||[];S.admin.details=p[4].data||[];
   S.admin.loaded=true;
 }
 async function refresh(){
@@ -619,11 +627,61 @@ function vIdea(id){
 }
 
 /* ---------- حساب من ---------- */
-function vMe(){
+var ROLES=[['tech','فنی و ساخت'],['product','محصول'],['sales','فروش و بازاریابی'],['ops','عملیات'],['fin','مالی'],['legal','حقوقی'],['invest','سرمایه‌گذار']];
+var HZ=[3,6,12,24];
+function draftFrom(m){
+  m=m||{};var g=function(k){return m[k]==null?'':String(m[k])};
+  return {job_title:g('job_title'),interests:g('interests'),skills:g('skills'),hours_per_week:g('hours_per_week'),
+    capital_toman:g('capital_toman'),max_loss_toman:g('max_loss_toman'),constraints:g('constraints'),
+    risk:m.risk||0,horizon_months:m.horizon_months||0,team_roles:(m.team_roles||[]).slice()};
+}
+function pfField(k,label,hint,kind,unit){
+  var d=S.prof.draft,v=d[k]==null?'':d[k],input;
+  if(kind==='area')input='<textarea class="in" id="pf_'+k+'" data-pf="'+k+'" rows="2" maxlength="500">'+esc(v)+'</textarea>';
+  else if(unit)input='<div class="unit"><input class="in" id="pf_'+k+'" data-pf="'+k+'" inputmode="decimal" autocomplete="off" value="'+esc(v)+'"><span>'+unit+'</span></div>';
+  else input='<input class="in" id="pf_'+k+'" data-pf="'+k+'" maxlength="'+(k==='job_title'?120:500)+'" value="'+esc(v)+'">';
+  return '<div class="field"><label class="lbl" for="pf_'+k+'">'+label+'<span class="opt">اختیاری</span></label>'+input+(hint?'<p class="hint">'+hint+'</p>':'')+'</div>';
+}
+function vProfileTab(){
+  var d=S.prof.draft;if(!d)return skeletons();
+  var filled=['job_title','interests','skills','capital_toman','risk'].filter(function(k){return d[k]}).length;
+  return '<form id="profileForm" class="panel" novalidate style="max-width:760px">'
+   +'<div class="note">'+ICON('shield')+'<span>همه‌ی فیلدها اختیاری است. چیزی را که نمی‌دانید خالی بگذارید و حدس نزنید.</span></div>'
+   +'<h2>دیده‌شدن برای اعضای گروه</h2>'
+   +pfField('job_title','عنوان یا تخصص اصلی','مثلاً مهندس برق، بازرگان، پزشک.')
+   +pfField('interests','حوزه‌های موردعلاقه برای کسب‌وکار','چند حوزه را با ویرگول جدا کنید؛ مثلاً غذا، انرژی خورشیدی، واردات.','area')
+   +'<h2>فقط برای شما و مدیر '+ICON('lock')+'</h2>'
+   +pfField('skills','مهارت‌ها و تجربه‌ها','','area')
+   +'<div class="field"><span class="lbl">نقش موردعلاقه در تیم<span class="opt">اختیاری</span></span><div class="chips">'
+   +ROLES.map(function(r){return '<button type="button" class="chip" data-act="prole" data-v="'+r[0]+'" aria-pressed="'+(d.team_roles.indexOf(r[0])>=0)+'">'+r[1]+'</button>'}).join('')+'</div></div>'
+   +'<div class="grid2">'+pfField('hours_per_week','ساعت آزاد در هفته','','','ساعت')+pfField('capital_toman','سرمایه‌ی قابل‌اختصاص','برای همه‌ی ایده‌ها روی هم.','','تومان')+'</div>'
+   +'<div class="grid2">'+pfField('max_loss_toman','حداکثر زیان قابل‌تحمل','اگر همه‌چیز شکست بخورد.','','تومان')
+   +'<div class="field"><span class="lbl">افق زمانی تا اولین درآمد<span class="opt">اختیاری</span></span><div class="chips">'
+   +HZ.map(function(h){return '<button type="button" class="chip" data-act="phz" data-v="'+h+'" aria-pressed="'+(d.horizon_months===h)+'">'+fa(h)+' ماه</button>'}).join('')+'</div></div></div>'
+   +'<div class="field"><span class="lbl">ریسک‌پذیری<span class="opt">اختیاری</span></span><div class="score" style="grid-template-columns:repeat(5,1fr)">'
+   +[1,2,3,4,5].map(function(n){return '<button type="button" data-act="prisk" data-v="'+n+'" aria-pressed="'+(d.risk===n)+'">'+fa(n)+'</button>'}).join('')+'</div><p class="hint">۱ = بسیار محتاط، ۵ = ریسک‌پذیر.</p></div>'
+   +pfField('constraints','محدودیت‌ها یا ملاحظات شخصی','مثلاً همزمان شغل تمام‌وقت دارم.','area')
+   +'<div class="row"><button class="btn primary" type="submit" '+(S.ui.busy?'disabled':'')+'>'+ICON('check')+'ذخیره‌ی پروفایل</button><span class="hint">'+(filled?'پروفایل شما تا حدی پر شده است.':'پروفایل شما هنوز خالی است.')+'</span></div></form>';
+}
+function vMembersTab(){
+  var rows=S.prof.dir;
+  if(!rows.length)return '<div class="empty">'+EMPTYART+'<b>هنوز عضوی ثبت نشده است</b></div>';
+  return '<p class="hint" style="margin:0 0 10px">در این فهرست فقط نام، تخصص و حوزه‌های موردعلاقه دیده می‌شود. سرمایه، ریسک و جزئیات دیگر فقط برای مدیر و خود فرد است. نام اعضا هرگز کنار ایده‌ای که ثبت کرده‌اند نشان داده نمی‌شود.</p>'
+   +'<div class="cards">'+rows.map(function(m){
+     return '<article class="idea"><div class="body"><h3>'+esc(m.display_name)+'</h3><p class="desc" style="min-height:0">'+esc(m.job_title||'تخصص ثبت نشده')+'</p>'
+      +'<dl class="facts" style="grid-template-columns:1fr"><div><dt>حوزه‌های موردعلاقه</dt><dd style="white-space:normal">'+esc(m.interests||'—')+'</dd></div></dl></div></article>'}).join('')+'</div>';
+}
+function vAccountTab(){
   var p=S.profile,stm={approved:'تأییدشده',pending:'در انتظار تأیید',blocked:'مسدود'};
-  return '<div class="pagehead"><h1>حساب من</h1></div><div class="panel" style="max-width:520px"><dl class="kv"><dt>ایمیل</dt><dd dir="ltr" style="text-align:right">'+esc(p.email||'')+'</dd><dt>وضعیت</dt><dd>'+esc(stm[p.status]||p.status)+(p.is_admin?' · مدیر':'')+'</dd></dl>'
+  return '<div class="panel" style="max-width:520px"><dl class="kv"><dt>ایمیل</dt><dd dir="ltr" style="text-align:right">'+esc(p.email||'')+'</dd><dt>وضعیت</dt><dd>'+esc(stm[p.status]||p.status)+(p.is_admin?' · مدیر':'')+'</dd></dl>'
    +'<div class="field"><span class="lbl">ظاهر سایت</span><div class="themeseg"><button type="button" class="themeopt" data-act="theme" data-v="light" aria-pressed="'+(curTheme()!=='dark')+'"><i class="l"></i>روشن</button><button type="button" class="themeopt" data-act="theme" data-v="dark" aria-pressed="'+(curTheme()==='dark')+'"><i class="d"></i>تیره</button></div><p class="hint">انتخاب شما فقط روی همین مرورگر ذخیره می‌شود.</p></div>'
-   +'<form id="nameForm" style="display:flex;flex-direction:column;gap:10px"><div class="field"><label class="lbl" for="nm">نام نمایشی</label><input class="in" id="nm" maxlength="80" value="'+esc(p.display_name||'')+'"><p class="hint">این نام فقط برای مدیر دیده می‌شود.</p></div><div class="row"><button class="btn primary" type="submit">ذخیره‌ی نام</button><button class="btn" type="button" data-act="logout">خروج از حساب</button></div></form></div>';
+   +'<form id="nameForm" style="display:flex;flex-direction:column;gap:10px"><div class="field"><label class="lbl" for="nm">نام نمایشی</label><input class="in" id="nm" maxlength="80" value="'+esc(p.display_name||'')+'"><p class="hint">این نام در فهرست اعضا دیده می‌شود، ولی هرگز کنار ایده‌هایی که ثبت می‌کنید نشان داده نمی‌شود.</p></div><div class="row"><button class="btn primary" type="submit">ذخیره‌ی نام</button><button class="btn" type="button" data-act="logout">خروج از حساب</button></div></form></div>';
+}
+function vMe(){
+  var t=S.ui.metab,tabs=[['profile','پروفایل من'],['members','اعضای گروه'],['account','حساب']];
+  return '<div class="pagehead"><h1>حساب من</h1></div><div class="tabs" role="tablist">'
+   +tabs.map(function(x){return '<button role="tab" data-act="metab" data-v="'+x[0]+'" aria-selected="'+(t===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'
+   +(t==='members'?vMembersTab():t==='account'?vAccountTab():vProfileTab());
 }
 
 /* ---------- مدیریت ---------- */
@@ -647,6 +705,15 @@ function vAdmin(){
       }).join('')+'</tbody></table></div>'
      +'<h2 style="margin-top:8px">پروفایل‌های قدیمی بدون حساب ('+fa(free.length)+')</h2>'
      +(free.length?'<div class="tblw"><table class="tbl"><thead><tr><th>نام</th><th>عنوان</th><th>رأی‌های قدیمی</th></tr></thead><tbody>'+free.map(function(m){return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.job_title||'—')+'</td><td>'+fa(A.legacy[m.id]||0)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="hint">همه‌ی پروفایل‌های قدیمی به حساب وصل شده‌اند.</p>');
+  }else if(t==='profiles'){
+    var D=A.details,RL={};ROLES.forEach(function(r){RL[r[0]]=r[1]});
+    var withP=D.filter(function(d){return d.status==='approved'&&(d.capital_toman!=null||d.risk!=null||d.job_title||d.interests)});
+    var caps=D.filter(function(d){return d.capital_toman!=null}),rks=D.filter(function(d){return d.risk!=null});
+    var sum=caps.reduce(function(a,d){return a+Number(d.capital_toman)},0),avg=rks.length?rks.reduce(function(a,d){return a+d.risk},0)/rks.length:null;
+    body='<div class="tiles"><div class="tile"><b>'+fa(withP.length)+'</b><span>پروفایل پرشده</span></div><div class="tile t2"><b>'+(caps.length?esc(tomanShort(sum)):'—')+'</b><span>جمع سرمایه‌ی اعلام‌شده ('+fa(caps.length)+' نفر)</span></div><div class="tile t4"><b>'+(avg==null?'—':fa(avg,1))+'</b><span>میانگین ریسک‌پذیری از ۵</span></div></div>'
+     +'<div class="tblw"><table class="tbl"><thead><tr><th>نام</th><th>تخصص</th><th>حوزه‌ها</th><th>نقش‌ها</th><th>ساعت/هفته</th><th>سرمایه</th><th>حداکثر زیان</th><th>ریسک</th><th>افق</th><th>ملاحظات</th></tr></thead><tbody>'
+     +D.map(function(d){return '<tr><td><b>'+esc(d.display_name||'—')+'</b><br><span class="hint" dir="ltr">'+esc(d.email||'')+'</span></td><td>'+esc(d.job_title||'—')+'</td><td>'+esc(d.interests||'—')+'</td><td>'+esc((d.team_roles||[]).map(function(r){return RL[r]||r}).join('، ')||'—')+'</td><td>'+(d.hours_per_week==null?'—':fa(Number(d.hours_per_week)))+'</td><td>'+(d.capital_toman==null?'—':esc(tomanShort(Number(d.capital_toman))))+'</td><td>'+(d.max_loss_toman==null?'—':esc(tomanShort(Number(d.max_loss_toman))))+'</td><td>'+(d.risk==null?'—':fa(d.risk))+'</td><td>'+(d.horizon_months==null?'—':fa(d.horizon_months)+' ماه')+'</td><td>'+esc(d.constraints||'—')+'</td></tr>'}).join('')+'</tbody></table></div>'
+     +'<p class="hint">این جمع‌ها فقط از اطلاعاتی است که اعضا خودشان وارد کرده‌اند؛ جای خالی یعنی هنوز وارد نشده، نه صفر.</p>';
   }else if(t==='audit'){
     var AL={user_status:'تغییر وضعیت حساب',link_member:'وصل پروفایل قدیمی',idea_status:'تغییر وضعیت ایده',idea_archived:'آرشیو ایده',idea_deep:'ذخیره‌ی بررسی تخصصی',assign_owner:'تعیین پیشنهاددهنده'};
     var nm={};A.users.forEach(function(u){nm[u.user_id]=u.display_name||u.email});
@@ -657,7 +724,7 @@ function vAdmin(){
         return '<tr><td><a href="#/idea/'+esc(i.id)+'"><b>'+esc(i.title)+'</b></a></td><td>'+esc(o.owner_name||'نامشخص')+'</td><td>'+fa(r.votes_count||0)+'</td><td>'+(r.votes_count?fa(r.avg_interest,1):'—')+'</td><td><span class="badge b-'+st.k+'">'+esc(st.t)+'</span></td></tr>'}).join('')+'</tbody></table></div>';
   }
   return '<div class="pagehead"><div><h1>مدیریت</h1><p class="sub">'+(pend?'<b>'+fa(pend)+'</b> حساب منتظر تأیید است.':'حساب منتظر تأییدی وجود ندارد.')+'</p></div></div>'
-   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button></div>'
+   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="profiles" aria-selected="'+(t==='profiles')+'">پروفایل اعضا</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button></div>'
    +'<div style="display:flex;flex-direction:column;gap:14px">'+body+'</div>';
 }
 
@@ -730,6 +797,14 @@ document.addEventListener('click',async function(e){
     if(act==='recheck'){await refresh();return}
     if(act==='authtab'){S.ui.authTab=v;S.ui.authMsg='';render();return}
     if(act==='theme'){setTheme(v);render();return}
+    if(act==='metab'){S.ui.metab=v;render();return}
+    if(act==='prole'||act==='prisk'||act==='phz'){
+      var dr=S.prof.draft;
+      if(act==='prole'){var ix=dr.team_roles.indexOf(v);if(ix>=0)dr.team_roles.splice(ix,1);else dr.team_roles.push(v)}
+      else if(act==='prisk')dr.risk=(dr.risk===Number(v)?0:Number(v));
+      else dr.horizon_months=(dr.horizon_months===Number(v)?0:Number(v));
+      var sc2=window.scrollY;render();window.scrollTo(0,sc2);return;
+    }
     if(act==='filter'){S.ui.filter=v;render();return}
     if(act==='atab'){S.ui.tab=v;render();return}
     if(act==='score'||act==='join'){
@@ -763,6 +838,7 @@ document.addEventListener('click',async function(e){
 });
 document.addEventListener('input',function(e){
   var t=e.target;
+  if(t.dataset&&t.dataset.pf&&S.prof.draft){S.prof.draft[t.dataset.pf]=t.value;return}
   if(t.id==='q'){S.ui.q=t.value;var pos=t.selectionStart;render();var n=$('#q');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}return}
   if(t.dataset&&t.dataset.f&&S.ui.form){
     S.ui.form[t.dataset.f]=t.value;
@@ -811,6 +887,15 @@ document.addEventListener('submit',async function(e){
       if(res.error){S.ui.authMsg='!'+errText(res.error);render();return}
       if(up&&!res.data.session){S.ui.authTab='in';S.ui.authMsg='ثبت‌نام انجام شد. اگر ایمیل تأیید برایتان آمد آن را باز کنید، سپس وارد شوید.';render();return}
       S.session=res.data.session;await refresh();return;
+    }
+    if(f.id==='profileForm'){
+      var dd=S.prof.draft,pl={job_title:dd.job_title.trim(),interests:dd.interests.trim(),skills:dd.skills.trim(),constraints:dd.constraints.trim(),team_roles:dd.team_roles,risk:dd.risk?String(dd.risk):'',horizon_months:dd.horizon_months?String(dd.horizon_months):''};
+      var bad=null;['hours_per_week','capital_toman','max_loss_toman'].forEach(function(k){var n=normNum(dd[k]);if(n===null)bad=k;pl[k]=n||''});
+      if(bad){toast('عددها را فقط با رقم و بدون منفی وارد کنید.',true);return}
+      if(pl.capital_toman&&pl.max_loss_toman&&Number(pl.max_loss_toman)>Number(pl.capital_toman)){toast('حداکثر زیان نمی‌تواند از سرمایه بیشتر باشد.',true);return}
+      S.ui.busy=true;render();
+      var rp=await sb.rpc('save_my_profile',{p:pl});S.ui.busy=false;if(rp.error)throw rp.error;
+      S.prof.draft=null;await loadData();toast('پروفایل ذخیره شد.');render();return;
     }
     if(f.id==='nameForm'){
       var r=await sb.rpc('update_my_name',{p_name:$('#nm').value});if(r.error)throw r.error;
