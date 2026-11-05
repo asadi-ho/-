@@ -250,8 +250,8 @@ body{background:radial-gradient(1200px 500px at 85% -10%,#e3f1f0 0%,transparent 
 .finish{position:absolute;inset-block:0;inset-inline-end:0;width:16px;background:repeating-conic-gradient(#fff 0 25%,#10212e 0 50%) 0 0/8px 8px}
 .runner{position:absolute;top:2px;width:60px;height:60px;inset-inline-start:calc((100% - 96px) * var(--p) + 6px);animation:go 2.4s cubic-bezier(.22,.7,.2,1) both;animation-delay:calc(var(--n) * .12s)}
 @keyframes go{from{inset-inline-start:6px}}
-.runner svg{width:60px;height:60px;overflow:visible;transform:scaleX(-1)}
-[dir=ltr] .runner svg{transform:none}
+.runner svg{width:60px;height:60px;overflow:visible}
+[dir=ltr] .runner svg{transform:scaleX(-1)}
 .runner .pa{animation:pa .24s steps(1) 10;animation-delay:calc(var(--n) * .12s)}
 .runner .pb{opacity:0;animation:pb .24s steps(1) 10;animation-delay:calc(var(--n) * .12s)}
 @keyframes pa{0%{opacity:1}50%{opacity:0}}
@@ -997,8 +997,7 @@ async function boot(){
   var g=await sb.auth.getSession();S.session=g.data&&g.data.session;
   sb.auth.onAuthStateChange(function(ev,sess){
     var prev=S.session&&S.session.user&&S.session.user.id,cur=sess&&sess.user&&sess.user.id;
-    S.session=sess;
-    if(prev!==cur)setTimeout(refresh,0);
+    S.session=sess;    if(prev!==cur)setTimeout(refresh,0);
   });
   window.addEventListener('focus',function(){if(S.session&&S.profile&&S.profile.status==='approved')loadData().then(function(){if(!S.ui.form)render()}).catch(function(){})});
   await refresh();
