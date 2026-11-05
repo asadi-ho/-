@@ -229,6 +229,50 @@ body{background:radial-gradient(1200px 500px at 85% -10%,#e3f1f0 0%,transparent 
 .themeopt i{width:34px;height:34px;border-radius:10px;border:1px solid var(--line-strong);display:block;flex:none}
 .themeopt i.l{background:linear-gradient(135deg,#f2f6f7 50%,#fff 50%)}
 .themeopt i.d{background:linear-gradient(135deg,#0b151d 50%,#122029 50%)}
+
+/* ---------- race track (top ideas by participants) ---------- */
+.racebox{margin-top:26px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#bfe6f2 0%,#e6f6fb 46%,#7bc47f 46%,#6bb86f 100%);border:1px solid var(--line);box-shadow:var(--shadow-up)}
+.racehead{padding:18px 20px 0;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;color:#10212e}
+.racehead h2{color:#10212e;font-size:19px}.racehead p{margin:2px 0 0;font-size:13.5px;color:#34505f;max-width:52ch}
+.racehead .cup{width:64px;height:64px;flex:none}
+.crowd{display:block;width:100%;height:88px;margin-top:10px}
+.track{position:relative;background:#c9573f;padding:8px 0;border-block:4px solid #fff;margin-top:-2px}
+.lane{position:relative;display:flex;align-items:stretch;height:64px;border-bottom:2px dashed rgba(255,255,255,.75)}
+.lane:last-child{border-bottom:0}
+.lane::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:6px;background:#fff;opacity:.9}
+.lbl{flex:none;width:clamp(112px,27%,230px);display:flex;align-items:center;gap:8px;padding:0 10px;background:rgba(16,33,46,.88);color:#fff;min-width:0;position:relative;z-index:2}
+.lbl a{display:block;min-width:0}
+.lbl b{display:block;font-size:13.5px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.lbl small{display:block;color:#bcd2df;font-size:11.5px;white-space:nowrap}
+.medal{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;color:#10212e;border:2.5px solid #10212e;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.m1{background:#ffd34d}.m2{background:#dfe6ec}.m3{background:#e9a572}.m4,.m5{background:#fff}
+.run{position:relative;flex:1;min-width:0}
+.finish{position:absolute;inset-block:0;inset-inline-end:0;width:16px;background:repeating-conic-gradient(#fff 0 25%,#10212e 0 50%) 0 0/8px 8px}
+.runner{position:absolute;top:2px;width:60px;height:60px;inset-inline-start:calc((100% - 96px) * var(--p) + 6px);animation:go 2.4s cubic-bezier(.22,.7,.2,1) both;animation-delay:calc(var(--n) * .12s)}
+@keyframes go{from{inset-inline-start:6px}}
+.runner svg{width:60px;height:60px;overflow:visible;transform:scaleX(-1)}
+[dir=ltr] .runner svg{transform:none}
+.runner .pa{animation:pa .24s steps(1) 10;animation-delay:calc(var(--n) * .12s)}
+.runner .pb{opacity:0;animation:pb .24s steps(1) 10;animation-delay:calc(var(--n) * .12s)}
+@keyframes pa{0%{opacity:1}50%{opacity:0}}
+@keyframes pb{0%{opacity:0}50%{opacity:1}}
+.runner .bob{animation:bob .24s ease-in-out 10 alternate;animation-delay:calc(var(--n) * .12s);transform-box:fill-box}
+@keyframes bob{to{transform:translateY(-2px)}}
+.runner .dust{animation:dust 2.4s ease-out both;animation-delay:calc(var(--n) * .12s)}
+@keyframes dust{0%{opacity:.8}100%{opacity:0}}
+.tag{position:absolute;top:-2px;inset-inline-start:calc((100% - 96px) * var(--p) + 62px);background:#fff;color:#10212e;border:2px solid #10212e;border-radius:10px;padding:0 8px;font-size:12px;font-weight:800;line-height:20px;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.2);animation:go2 2.4s cubic-bezier(.22,.7,.2,1) both;animation-delay:calc(var(--n) * .12s)}
+@keyframes go2{from{inset-inline-start:62px}}
+.tag.back{inset-inline-start:calc((100% - 96px) * var(--p) - 52px);animation-name:go3}
+@keyframes go3{from{inset-inline-start:-52px}}
+.raceft{padding:12px 20px 16px;font-size:12.8px;color:#10361d;background:rgba(255,255,255,.55);backdrop-filter:blur(2px)}
+.raceft b{color:#0a2a15}
+@media(max-width:700px){.tag.back{inset-inline-start:calc((100% - 84px) * var(--p) - 50px)}.lbl{width:clamp(128px,38%,230px)}.lane{height:58px}.runner,.runner svg{width:52px;height:52px}.runner{inset-inline-start:calc((100% - 84px) * var(--p) + 4px)}.tag{inset-inline-start:calc((100% - 84px) * var(--p) + 54px);font-size:11px;line-height:18px}.lbl{padding:0 6px;gap:6px}.medal{width:26px;height:26px;font-size:12px}.racehead .cup{display:none}}
+@media(prefers-reduced-motion:reduce){.runner,.tag,.runner .pa,.runner .pb,.runner .bob,.runner .dust{animation:none!important}.runner .pb{opacity:0}}
+:root[data-theme="dark"] .racebox{background:linear-gradient(180deg,#14324a 0%,#1b4660 46%,#2f7a4c 46%,#286b42 100%)}
+:root[data-theme="dark"] .racehead,:root[data-theme="dark"] .racehead h2{color:#fff}
+:root[data-theme="dark"] .racehead p{color:#cfe0ec}
+:root[data-theme="dark"] .raceft{background:rgba(8,18,26,.55);color:#d6efe0}
+:root[data-theme="dark"] .raceft b{color:#fff}
 </style>
 </head>
 <body>
@@ -421,6 +465,41 @@ var RADAR='<svg class="radar" viewBox="0 0 300 300" aria-hidden="true"><defs><ra
  +'<g class="sweep"><path d="M150 150L150 2A148 148 0 0 1 254 45Z" fill="url(#rg)"/><path d="M150 150L150 2" stroke="#7fe0da" stroke-width="1.5" stroke-opacity=".8"/></g>'
  +'<g><circle cx="205" cy="95" r="5" fill="#f1c36b"/><circle cx="205" cy="95" r="11" fill="none" stroke="#f1c36b" stroke-opacity=".5"/><circle cx="108" cy="190" r="4" fill="#7fe0da"/><circle cx="188" cy="205" r="3.5" fill="#fff"/><circle cx="120" cy="88" r="3" fill="#7fe0da" opacity=".8"/></g></svg>';
 var EMPTYART='<svg class="art" viewBox="0 0 150 110" aria-hidden="true"><g fill="none" stroke="#0c8686" stroke-opacity=".35"><circle cx="75" cy="60" r="18"/><circle cx="75" cy="60" r="36"/><circle cx="75" cy="60" r="54"/></g><circle cx="75" cy="60" r="4" fill="#0c8686"/><circle cx="104" cy="38" r="4" fill="#e39a2d"/></svg>';
+
+var LANEC=['#2f8fe0','#e8590c','#2fa36b','#9b51e0','#e0a800'];
+function runnerSvg(c){
+  var O='#10212e',skin='#f6c9a0';
+  function limb(d,w,col){return '<path d="'+d+'" fill="none" stroke="'+O+'" stroke-width="'+(w+3)+'" stroke-linecap="round" stroke-linejoin="round"/><path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"/>'}
+  function pose(cls,legs,arms){return '<g class="'+cls+'">'+legs.map(function(d){return limb(d,4,skin)}).join('')+limb('M30 21 L32 36',9,c)+arms.map(function(d){return limb(d,3.6,skin)}).join('')+'<path d="M26 35 h13 l1 6 h-15z" fill="#10212e"/></g>'}
+  var head='<g class="bob"><circle cx="30" cy="12" r="8.5" fill="'+skin+'" stroke="'+O+'" stroke-width="2.5"/><path d="M21.6 11 A8.6 8.6 0 0 1 38.4 10.5 Z" fill="'+c+'" stroke="'+O+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M22 11 L14 13" stroke="'+O+'" stroke-width="5" stroke-linecap="round"/><path d="M22 11 L14.5 12.8" stroke="'+c+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="26" cy="13" r="1.4" fill="'+O+'"/><path d="M24 17 q3 2.4 6 0" stroke="'+O+'" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>';
+  var A=pose('pa',['M32 37 L22 41 L13 47','M32 37 L39 44 L45 39'],['M30 22 L38 27 L42 33','M30 22 L22 27 L20 19']);
+  var B=pose('pb',['M32 37 L28 46 L25 55','M32 37 L40 40 L47 45'],['M30 22 L22 28 L20 21','M30 22 L38 26 L41 20']);
+  return '<svg viewBox="0 0 60 60" aria-hidden="true"><ellipse cx="30" cy="57" rx="14" ry="2.6" fill="rgba(0,0,0,.25)"/><g stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".75"><path d="M52 18h8"/><path d="M50 26h10"/><path d="M52 34h8"/></g><g class="dust" fill="#fff" opacity=".8"><circle cx="48" cy="54" r="2.6"/><circle cx="54" cy="51" r="1.8"/><circle cx="42" cy="56" r="1.6"/></g>'+A+B+head+'</svg>';
+}
+var CUP='<svg class="cup" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 10h32v14a16 16 0 0 1-32 0z" fill="#ffd34d" stroke="#10212e" stroke-width="3" stroke-linejoin="round"/><path d="M16 14H7v4a9 9 0 0 0 9 9M48 14h9v4a9 9 0 0 1-9 9" fill="none" stroke="#10212e" stroke-width="3" stroke-linecap="round"/><rect x="27" y="40" width="10" height="9" fill="#e0a800" stroke="#10212e" stroke-width="3"/><rect x="19" y="49" width="26" height="8" rx="2" fill="#10212e"/><path d="M32 17l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8z" fill="#fff" stroke="#10212e" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+function crowdSvg(){
+  var cols=['#e8590c','#2f8fe0','#9b51e0','#e0a800','#2fa36b','#d6336c','#1c7ed6','#f08c00'],o='',sk=['#f6c9a0','#e0a578','#c68a5c','#f9d9b8'],O='#10212e';
+  var flags='';for(var f=0;f<14;f++){var x=f*74+10;flags+='<path d="M'+x+' 4 l30 0 l-15 20z" fill="'+cols[f%cols.length]+'" stroke="'+O+'" stroke-width="2" stroke-linejoin="round" transform="translate(0,'+Math.round(8*Math.sin(f*.9))+')"/>'}
+  var line='<path d="M0 6 Q250 20 500 6 T1000 6" fill="none" stroke="'+O+'" stroke-width="2.5"/>';
+  for(var n=0;n<34;n++){var h=hash('crowd'+n),x2=14+n*29.4+(h%7),y=44+(h>>4)%16,c=cols[h%cols.length];
+    o+='<g><path d="M'+(x2-11)+' 90 q0 -26 11 -26 q11 0 11 26z" fill="'+c+'" stroke="'+O+'" stroke-width="2"/><circle cx="'+x2+'" cy="'+(y+8)+'" r="8" fill="'+sk[h%4]+'" stroke="'+O+'" stroke-width="2"/>'+((h>>6)%3===0?'<path d="M'+(x2-9)+' 70 l-5 -14 M'+(x2+9)+' 70 l5 -14" stroke="'+O+'" stroke-width="3" stroke-linecap="round" fill="none"/>':'')+'</g>';}
+  return '<svg class="crowd" viewBox="0 0 1000 90" preserveAspectRatio="xMidYMax slice" aria-hidden="true">'+o+line+flags+'</svg>';
+}
+function raceTrack(){
+  var act=S.ideas.filter(function(i){return !i.archived});
+  var R=function(i){return S.results[i.id]||{}};
+  var top=act.slice().sort(function(a,b){var x=R(a),y=R(b);return (y.yes_count||0)-(x.yes_count||0)||(y.avg_interest||0)-(x.avg_interest||0)||(y.votes_count||0)-(x.votes_count||0)}).slice(0,5);
+  if(!top.length)return '';
+  var mx=Math.max.apply(null,top.map(function(i){return R(i).yes_count||0}));
+  var lanes=top.map(function(i,n){
+    var r=R(i),y=r.yes_count||0,p=mx?Math.max(.06,y/mx):0.0;
+    return '<div class="lane" data-lane="'+esc(i.id)+'"><div class="lbl"><span class="medal m'+(n+1)+'">'+fa(n+1)+'</span><a href="#/idea/'+esc(i.id)+'"><b>'+esc(i.title)+'</b><small>'+fa(y)+' شریک · '+(r.votes_count?fa(r.avg_interest,1)+' از ۱۰':'بدون رأی')+'</small></a></div>'
+     +'<div class="run" style="--p:'+p.toFixed(3)+';--n:'+n+'"><span class="finish"></span><div class="runner" title="'+esc(i.title)+'">'+runnerSvg(LANEC[n])+'</div><span class="tag'+(p>.5?' back':'')+'">'+fa(y)+' نفر</span></div></div>';
+  }).join('');
+  return '<section class="racebox" aria-label="مسابقه‌ی پنج ایده‌ی پرطرفدار"><div class="racehead"><div><h2>مسابقه‌ی ایده‌ها</h2><p>پنج ایده‌ای که بیشترین نفر گفته‌اند «شریک می‌شوم». هر چه ایده به خط پایان نزدیک‌تر باشد، همراه بیشتری دارد.</p></div>'+CUP+'</div>'
+   +crowdSvg()+'<div class="track">'+lanes+'</div>'
+   +'<div class="raceft">'+(mx?'ترتیب بر اساس <b>تعداد شرکت‌کنندگان</b>؛ در تساوی، میانگین علاقه‌ی ایده ملاک است. این نمودار تصمیم نهایی نیست، فقط نشان می‌دهد گروه کجا بیشتر هم‌نظر است.':'هنوز کسی «شریک می‌شوم» را انتخاب نکرده است. با رأی‌دادن و انتخاب این گزینه، مسابقه شروع می‌شود.')+'</div></section>';
+}
 function ideaCard(i){
   var st=stageOf(i);
   return '<article class="idea"><div class="top">'+ideaArt(i.id)+'<div class="badges"><span class="badge b-'+st.k+'">'+esc(st.t)+'</span>'+(S.mine[i.id]?'<span class="badge b-mine">ایده‌ی من</span>':'')+'</div></div><div class="body">'
@@ -458,7 +537,8 @@ function vHome(){
     +'<div class="tiles"><div class="tile"><span class="ic">'+ICON('bulb')+'</span><b>'+fa(act.length)+'</b><span>کل ایده‌ها</span></div><div class="tile t2"><span class="ic">'+ICON('edit')+'</span><b>'+fa(waiting)+'</b><span>در انتظار رأی</span></div>'
     +'<div class="tile t4"><span class="ic">'+ICON('chart')+'</span><b>'+fa(voting)+'</b><span>در حال رأی‌گیری</span></div><div class="tile t3"><span class="ic">'+ICON('check')+'</span><b>'+fa(picked)+'</b><span>منتخب برای بررسی</span></div></div>'
     +'<div class="pagehead"><h2>آخرین ایده‌های ثبت‌شده</h2><a class="btn sm ghost" href="#/ideas">همه‌ی ایده‌ها</a></div>'
-    +(latest.length?'<div class="cards">'+latest.map(ideaCard).join('')+'</div>':'<div class="empty">'+EMPTYART+'<b>هنوز ایده‌ای ثبت نشده است</b><a class="btn primary" href="#/new">اولین ایده را ثبت کنید</a></div>');
+    +(latest.length?'<div class="cards">'+latest.map(ideaCard).join('')+'</div>':'<div class="empty">'+EMPTYART+'<b>هنوز ایده‌ای ثبت نشده است</b><a class="btn primary" href="#/new">اولین ایده را ثبت کنید</a></div>')
+    +(latest.length?raceTrack():'');
 }
 
 function vIdeas(){
