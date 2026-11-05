@@ -229,6 +229,50 @@ body{background:radial-gradient(1200px 500px at 85% -10%,#e3f1f0 0%,transparent 
 .themeopt i{width:34px;height:34px;border-radius:10px;border:1px solid var(--line-strong);display:block;flex:none}
 .themeopt i.l{background:linear-gradient(135deg,#f2f6f7 50%,#fff 50%)}
 .themeopt i.d{background:linear-gradient(135deg,#0b151d 50%,#122029 50%)}
+
+/* ---------- race track (top ideas by participants) ---------- */
+.racebox{margin-top:26px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#bfe6f2 0%,#e6f6fb 46%,#7bc47f 46%,#6bb86f 100%);border:1px solid var(--line);box-shadow:var(--shadow-up)}
+.racehead{padding:18px 20px 0;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;color:#10212e}
+.racehead h2{color:#10212e;font-size:19px}.racehead p{margin:2px 0 0;font-size:13.5px;color:#34505f;max-width:52ch}
+.racehead .cup{width:64px;height:64px;flex:none}
+.crowd{display:block;width:100%;height:88px;margin-top:10px}
+.track{position:relative;background:#c9573f;padding:8px 0;border-block:4px solid #fff;margin-top:-2px}
+.lane{position:relative;display:flex;align-items:stretch;height:64px;border-bottom:2px dashed rgba(255,255,255,.75)}
+.lane:last-child{border-bottom:0}
+.lane::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:6px;background:#fff;opacity:.9}
+.lbl{flex:none;width:clamp(112px,27%,230px);display:flex;align-items:center;gap:8px;padding:0 10px;background:rgba(16,33,46,.88);color:#fff;min-width:0;position:relative;z-index:2}
+.lbl a{display:block;min-width:0}
+.lbl b{display:block;font-size:13.5px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.lbl small{display:block;color:#bcd2df;font-size:11.5px;white-space:nowrap}
+.medal{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;color:#10212e;border:2.5px solid #10212e;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.m1{background:#ffd34d}.m2{background:#dfe6ec}.m3{background:#e9a572}.m4,.m5{background:#fff}
+.run{position:relative;flex:1;min-width:0}
+.finish{position:absolute;inset-block:0;inset-inline-end:0;width:16px;background:repeating-conic-gradient(#fff 0 25%,#10212e 0 50%) 0 0/8px 8px}
+.runner{position:absolute;top:2px;width:60px;height:60px;inset-inline-start:calc((100% - 96px) * var(--p) + 6px);animation:go 2.4s cubic-bezier(.22,.7,.2,1) both;animation-delay:calc(var(--n) * .12s)}
+@keyframes go{from{inset-inline-start:6px}}
+.runner svg{width:60px;height:60px;overflow:visible}
+[dir=ltr] .runner svg{transform:scaleX(-1)}
+.runner .pa{animation:pa .24s steps(1) 10;animation-delay:calc(var(--n) * .12s)}
+.runner .pb{opacity:0;animation:pb .24s steps(1) 10;animation-delay:calc(var(--n) * .12s)}
+@keyframes pa{0%{opacity:1}50%{opacity:0}}
+@keyframes pb{0%{opacity:0}50%{opacity:1}}
+.runner .bob{animation:bob .24s ease-in-out 10 alternate;animation-delay:calc(var(--n) * .12s);transform-box:fill-box}
+@keyframes bob{to{transform:translateY(-2px)}}
+.runner .dust{animation:dust 2.4s ease-out both;animation-delay:calc(var(--n) * .12s)}
+@keyframes dust{0%{opacity:.8}100%{opacity:0}}
+.tag{position:absolute;top:-2px;inset-inline-start:calc((100% - 96px) * var(--p) + 62px);background:#fff;color:#10212e;border:2px solid #10212e;border-radius:10px;padding:0 8px;font-size:12px;font-weight:800;line-height:20px;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.2);animation:go2 2.4s cubic-bezier(.22,.7,.2,1) both;animation-delay:calc(var(--n) * .12s)}
+@keyframes go2{from{inset-inline-start:62px}}
+.tag.back{inset-inline-start:calc((100% - 96px) * var(--p) - 52px);animation-name:go3}
+@keyframes go3{from{inset-inline-start:-52px}}
+.raceft{padding:12px 20px 16px;font-size:12.8px;color:#10361d;background:rgba(255,255,255,.55);backdrop-filter:blur(2px)}
+.raceft b{color:#0a2a15}
+@media(max-width:700px){.tag.back{inset-inline-start:calc((100% - 84px) * var(--p) - 50px)}.lbl{width:clamp(128px,38%,230px)}.lane{height:58px}.runner,.runner svg{width:52px;height:52px}.runner{inset-inline-start:calc((100% - 84px) * var(--p) + 4px)}.tag{inset-inline-start:calc((100% - 84px) * var(--p) + 54px);font-size:11px;line-height:18px}.lbl{padding:0 6px;gap:6px}.medal{width:26px;height:26px;font-size:12px}.racehead .cup{display:none}}
+@media(prefers-reduced-motion:reduce){.runner,.tag,.runner .pa,.runner .pb,.runner .bob,.runner .dust{animation:none!important}.runner .pb{opacity:0}}
+:root[data-theme="dark"] .racebox{background:linear-gradient(180deg,#14324a 0%,#1b4660 46%,#2f7a4c 46%,#286b42 100%)}
+:root[data-theme="dark"] .racehead,:root[data-theme="dark"] .racehead h2{color:#fff}
+:root[data-theme="dark"] .racehead p{color:#cfe0ec}
+:root[data-theme="dark"] .raceft{background:rgba(8,18,26,.55);color:#d6efe0}
+:root[data-theme="dark"] .raceft b{color:#fff}
 </style>
 </head>
 <body>
@@ -304,6 +348,10 @@ function errText(e){
   var k=Object.keys(ERR).filter(function(x){return m.indexOf(x)>=0})[0];
   if(k)return ERR[k];
   if(m.indexOf('invalid_number')>=0)return 'یکی از مبلغ‌ها یا عددها معتبر نیست؛ فقط رقم و بدون منفی وارد کنید.';
+  if(m.indexOf('invalid_risk')>=0)return 'ریسک‌پذیری باید عددی از ۱ تا ۵ باشد.';
+  if(m.indexOf('invalid_horizon')>=0)return 'افق زمانی باید یکی از ۳، ۶، ۱۲ یا ۲۴ ماه باشد.';
+  if(m.indexOf('invalid_max_loss')>=0)return 'حداکثر زیان قابل‌تحمل نمی‌تواند از سرمایه‌ی قابل‌اختصاص بیشتر باشد.';
+  if(m.indexOf('invalid_role')>=0)return 'یکی از نقش‌های انتخاب‌شده معتبر نیست.';
   if(m.indexOf('too_long')>=0)return 'یکی از متن‌ها بیش از حد طولانی است.';
   if(/Invalid login/i.test(m))return 'ایمیل یا رمز عبور اشتباه است.';
   if(/already registered|already been registered/i.test(m))return 'این ایمیل قبلاً ثبت‌نام کرده است؛ وارد شوید.';
@@ -317,8 +365,9 @@ function errText(e){
 /* ================= وضعیت برنامه ================= */
 var sb=null;
 var S={session:null,profile:null,ideas:[],results:{},mine:{},loaded:false,
-  admin:{loaded:false,users:[],members:[],owners:{},legacy:{}},
-  ui:{filter:'all',sort:'new',q:'',tab:'users',authTab:'in',vote:{},busy:false,form:null,errors:{},authMsg:''}};
+  admin:{loaded:false,users:[],members:[],owners:{},legacy:{},details:[]},
+  prof:{loaded:false,mine:{},draft:null,dir:[]},
+  ui:{filter:'all',sort:'new',q:'',tab:'users',metab:'profile',authTab:'in',vote:{},busy:false,form:null,errors:{},authMsg:''}};
 var isAdmin=function(){return !!(S.profile&&S.profile.is_admin&&S.profile.status==='approved')};
 
 /* ================= دسترسی به داده ================= */
@@ -330,8 +379,10 @@ async function loadProfile(){
 async function loadData(){
   var p=await Promise.all([
     sb.from('ideas').select(IDEA_COLS).order('created_at',{ascending:false}),
-    sb.rpc('idea_results'),sb.rpc('my_idea_ids')]);
+    sb.rpc('idea_results'),sb.rpc('my_idea_ids'),sb.rpc('my_profile'),sb.rpc('member_directory')]);
   if(p[0].error)throw p[0].error;if(p[1].error)throw p[1].error;if(p[2].error)throw p[2].error;
+  if(p[3].error)throw p[3].error;if(p[4].error)throw p[4].error;
+  S.prof.mine=p[3].data||{};S.prof.dir=p[4].data||[];if(!S.prof.draft)S.prof.draft=draftFrom(S.prof.mine);S.prof.loaded=true;
   S.ideas=p[0].data||[];
   S.results={};(p[1].data||[]).forEach(function(r){S.results[r.idea_id]=r});
   S.mine={};(p[2].data||[]).forEach(function(id){S.mine[typeof id==='object'?(id.my_idea_ids||id.idea_id):id]=true});
@@ -343,13 +394,14 @@ async function loadAdmin(){
     sb.from('profiles').select('*').order('created_at',{ascending:true}),
     sb.rpc('admin_legacy_members'),
     sb.from('idea_owners').select('*'),
-    sb.from('admin_audit').select('*').order('at',{ascending:false}).limit(100)]);
+    sb.from('admin_audit').select('*').order('at',{ascending:false}).limit(100),
+    sb.rpc('admin_member_details')]);
   p.forEach(function(x){if(x.error)throw x.error});
   S.admin.users=p[0].data||[];
   S.admin.members=(p[1].data||[]).map(function(m){return {id:m.id,name:m.name,job_title:'',pending:m.pending_ballots,owned:m.owned_ideas}});
   S.admin.owners={};(p[2].data||[]).forEach(function(o){S.admin.owners[o.idea_id]=o});
   S.admin.legacy={};S.admin.members.forEach(function(m){S.admin.legacy[m.id]=m.pending});
-  S.admin.audit=p[3].data||[];
+  S.admin.audit=p[3].data||[];S.admin.details=p[4].data||[];
   S.admin.loaded=true;
 }
 async function refresh(){
@@ -413,6 +465,41 @@ var RADAR='<svg class="radar" viewBox="0 0 300 300" aria-hidden="true"><defs><ra
  +'<g class="sweep"><path d="M150 150L150 2A148 148 0 0 1 254 45Z" fill="url(#rg)"/><path d="M150 150L150 2" stroke="#7fe0da" stroke-width="1.5" stroke-opacity=".8"/></g>'
  +'<g><circle cx="205" cy="95" r="5" fill="#f1c36b"/><circle cx="205" cy="95" r="11" fill="none" stroke="#f1c36b" stroke-opacity=".5"/><circle cx="108" cy="190" r="4" fill="#7fe0da"/><circle cx="188" cy="205" r="3.5" fill="#fff"/><circle cx="120" cy="88" r="3" fill="#7fe0da" opacity=".8"/></g></svg>';
 var EMPTYART='<svg class="art" viewBox="0 0 150 110" aria-hidden="true"><g fill="none" stroke="#0c8686" stroke-opacity=".35"><circle cx="75" cy="60" r="18"/><circle cx="75" cy="60" r="36"/><circle cx="75" cy="60" r="54"/></g><circle cx="75" cy="60" r="4" fill="#0c8686"/><circle cx="104" cy="38" r="4" fill="#e39a2d"/></svg>';
+
+var LANEC=['#2f8fe0','#e8590c','#2fa36b','#9b51e0','#e0a800'];
+function runnerSvg(c){
+  var O='#10212e',skin='#f6c9a0';
+  function limb(d,w,col){return '<path d="'+d+'" fill="none" stroke="'+O+'" stroke-width="'+(w+3)+'" stroke-linecap="round" stroke-linejoin="round"/><path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"/>'}
+  function pose(cls,legs,arms){return '<g class="'+cls+'">'+legs.map(function(d){return limb(d,4,skin)}).join('')+limb('M30 21 L32 36',9,c)+arms.map(function(d){return limb(d,3.6,skin)}).join('')+'<path d="M26 35 h13 l1 6 h-15z" fill="#10212e"/></g>'}
+  var head='<g class="bob"><circle cx="30" cy="12" r="8.5" fill="'+skin+'" stroke="'+O+'" stroke-width="2.5"/><path d="M21.6 11 A8.6 8.6 0 0 1 38.4 10.5 Z" fill="'+c+'" stroke="'+O+'" stroke-width="2.5" stroke-linejoin="round"/><path d="M22 11 L14 13" stroke="'+O+'" stroke-width="5" stroke-linecap="round"/><path d="M22 11 L14.5 12.8" stroke="'+c+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="26" cy="13" r="1.4" fill="'+O+'"/><path d="M24 17 q3 2.4 6 0" stroke="'+O+'" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>';
+  var A=pose('pa',['M32 37 L22 41 L13 47','M32 37 L39 44 L45 39'],['M30 22 L38 27 L42 33','M30 22 L22 27 L20 19']);
+  var B=pose('pb',['M32 37 L28 46 L25 55','M32 37 L40 40 L47 45'],['M30 22 L22 28 L20 21','M30 22 L38 26 L41 20']);
+  return '<svg viewBox="0 0 60 60" aria-hidden="true"><ellipse cx="30" cy="57" rx="14" ry="2.6" fill="rgba(0,0,0,.25)"/><g stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".75"><path d="M52 18h8"/><path d="M50 26h10"/><path d="M52 34h8"/></g><g class="dust" fill="#fff" opacity=".8"><circle cx="48" cy="54" r="2.6"/><circle cx="54" cy="51" r="1.8"/><circle cx="42" cy="56" r="1.6"/></g>'+A+B+head+'</svg>';
+}
+var CUP='<svg class="cup" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 10h32v14a16 16 0 0 1-32 0z" fill="#ffd34d" stroke="#10212e" stroke-width="3" stroke-linejoin="round"/><path d="M16 14H7v4a9 9 0 0 0 9 9M48 14h9v4a9 9 0 0 1-9 9" fill="none" stroke="#10212e" stroke-width="3" stroke-linecap="round"/><rect x="27" y="40" width="10" height="9" fill="#e0a800" stroke="#10212e" stroke-width="3"/><rect x="19" y="49" width="26" height="8" rx="2" fill="#10212e"/><path d="M32 17l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8z" fill="#fff" stroke="#10212e" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+function crowdSvg(){
+  var cols=['#e8590c','#2f8fe0','#9b51e0','#e0a800','#2fa36b','#d6336c','#1c7ed6','#f08c00'],o='',sk=['#f6c9a0','#e0a578','#c68a5c','#f9d9b8'],O='#10212e';
+  var flags='';for(var f=0;f<14;f++){var x=f*74+10;flags+='<path d="M'+x+' 4 l30 0 l-15 20z" fill="'+cols[f%cols.length]+'" stroke="'+O+'" stroke-width="2" stroke-linejoin="round" transform="translate(0,'+Math.round(8*Math.sin(f*.9))+')"/>'}
+  var line='<path d="M0 6 Q250 20 500 6 T1000 6" fill="none" stroke="'+O+'" stroke-width="2.5"/>';
+  for(var n=0;n<34;n++){var h=hash('crowd'+n),x2=14+n*29.4+(h%7),y=44+(h>>4)%16,c=cols[h%cols.length];
+    o+='<g><path d="M'+(x2-11)+' 90 q0 -26 11 -26 q11 0 11 26z" fill="'+c+'" stroke="'+O+'" stroke-width="2"/><circle cx="'+x2+'" cy="'+(y+8)+'" r="8" fill="'+sk[h%4]+'" stroke="'+O+'" stroke-width="2"/>'+((h>>6)%3===0?'<path d="M'+(x2-9)+' 70 l-5 -14 M'+(x2+9)+' 70 l5 -14" stroke="'+O+'" stroke-width="3" stroke-linecap="round" fill="none"/>':'')+'</g>';}
+  return '<svg class="crowd" viewBox="0 0 1000 90" preserveAspectRatio="xMidYMax slice" aria-hidden="true">'+o+line+flags+'</svg>';
+}
+function raceTrack(){
+  var act=S.ideas.filter(function(i){return !i.archived});
+  var R=function(i){return S.results[i.id]||{}};
+  var top=act.slice().sort(function(a,b){var x=R(a),y=R(b);return (y.yes_count||0)-(x.yes_count||0)||(y.avg_interest||0)-(x.avg_interest||0)||(y.votes_count||0)-(x.votes_count||0)}).slice(0,5);
+  if(!top.length)return '';
+  var mx=Math.max.apply(null,top.map(function(i){return R(i).yes_count||0}));
+  var lanes=top.map(function(i,n){
+    var r=R(i),y=r.yes_count||0,p=mx?Math.max(.06,y/mx):0.0;
+    return '<div class="lane" data-lane="'+esc(i.id)+'"><div class="lbl"><span class="medal m'+(n+1)+'">'+fa(n+1)+'</span><a href="#/idea/'+esc(i.id)+'"><b>'+esc(i.title)+'</b><small>'+fa(y)+' شریک · '+(r.votes_count?fa(r.avg_interest,1)+' از ۱۰':'بدون رأی')+'</small></a></div>'
+     +'<div class="run" style="--p:'+p.toFixed(3)+';--n:'+n+'"><span class="finish"></span><div class="runner" title="'+esc(i.title)+'">'+runnerSvg(LANEC[n])+'</div><span class="tag'+(p>.5?' back':'')+'">'+fa(y)+' نفر</span></div></div>';
+  }).join('');
+  return '<section class="racebox" aria-label="مسابقه‌ی پنج ایده‌ی پرطرفدار"><div class="racehead"><div><h2>مسابقه‌ی ایده‌ها</h2><p>پنج ایده‌ای که بیشترین نفر گفته‌اند «شریک می‌شوم». هر چه ایده به خط پایان نزدیک‌تر باشد، همراه بیشتری دارد.</p></div>'+CUP+'</div>'
+   +crowdSvg()+'<div class="track">'+lanes+'</div>'
+   +'<div class="raceft">'+(mx?'ترتیب بر اساس <b>تعداد شرکت‌کنندگان</b>؛ در تساوی، میانگین علاقه‌ی ایده ملاک است. این نمودار تصمیم نهایی نیست، فقط نشان می‌دهد گروه کجا بیشتر هم‌نظر است.':'هنوز کسی «شریک می‌شوم» را انتخاب نکرده است. با رأی‌دادن و انتخاب این گزینه، مسابقه شروع می‌شود.')+'</div></section>';
+}
 function ideaCard(i){
   var st=stageOf(i);
   return '<article class="idea"><div class="top">'+ideaArt(i.id)+'<div class="badges"><span class="badge b-'+st.k+'">'+esc(st.t)+'</span>'+(S.mine[i.id]?'<span class="badge b-mine">ایده‌ی من</span>':'')+'</div></div><div class="body">'
@@ -450,7 +537,8 @@ function vHome(){
     +'<div class="tiles"><div class="tile"><span class="ic">'+ICON('bulb')+'</span><b>'+fa(act.length)+'</b><span>کل ایده‌ها</span></div><div class="tile t2"><span class="ic">'+ICON('edit')+'</span><b>'+fa(waiting)+'</b><span>در انتظار رأی</span></div>'
     +'<div class="tile t4"><span class="ic">'+ICON('chart')+'</span><b>'+fa(voting)+'</b><span>در حال رأی‌گیری</span></div><div class="tile t3"><span class="ic">'+ICON('check')+'</span><b>'+fa(picked)+'</b><span>منتخب برای بررسی</span></div></div>'
     +'<div class="pagehead"><h2>آخرین ایده‌های ثبت‌شده</h2><a class="btn sm ghost" href="#/ideas">همه‌ی ایده‌ها</a></div>'
-    +(latest.length?'<div class="cards">'+latest.map(ideaCard).join('')+'</div>':'<div class="empty">'+EMPTYART+'<b>هنوز ایده‌ای ثبت نشده است</b><a class="btn primary" href="#/new">اولین ایده را ثبت کنید</a></div>');
+    +(latest.length?'<div class="cards">'+latest.map(ideaCard).join('')+'</div>':'<div class="empty">'+EMPTYART+'<b>هنوز ایده‌ای ثبت نشده است</b><a class="btn primary" href="#/new">اولین ایده را ثبت کنید</a></div>')
+    +(latest.length?raceTrack():'');
 }
 
 function vIdeas(){
@@ -619,11 +707,61 @@ function vIdea(id){
 }
 
 /* ---------- حساب من ---------- */
-function vMe(){
+var ROLES=[['tech','فنی و ساخت'],['product','محصول'],['sales','فروش و بازاریابی'],['ops','عملیات'],['fin','مالی'],['legal','حقوقی'],['invest','سرمایه‌گذار']];
+var HZ=[3,6,12,24];
+function draftFrom(m){
+  m=m||{};var g=function(k){return m[k]==null?'':String(m[k])};
+  return {job_title:g('job_title'),interests:g('interests'),skills:g('skills'),hours_per_week:g('hours_per_week'),
+    capital_toman:g('capital_toman'),max_loss_toman:g('max_loss_toman'),constraints:g('constraints'),
+    risk:m.risk||0,horizon_months:m.horizon_months||0,team_roles:(m.team_roles||[]).slice()};
+}
+function pfField(k,label,hint,kind,unit){
+  var d=S.prof.draft,v=d[k]==null?'':d[k],input;
+  if(kind==='area')input='<textarea class="in" id="pf_'+k+'" data-pf="'+k+'" rows="2" maxlength="500">'+esc(v)+'</textarea>';
+  else if(unit)input='<div class="unit"><input class="in" id="pf_'+k+'" data-pf="'+k+'" inputmode="decimal" autocomplete="off" value="'+esc(v)+'"><span>'+unit+'</span></div>';
+  else input='<input class="in" id="pf_'+k+'" data-pf="'+k+'" maxlength="'+(k==='job_title'?120:500)+'" value="'+esc(v)+'">';
+  return '<div class="field"><label class="lbl" for="pf_'+k+'">'+label+'<span class="opt">اختیاری</span></label>'+input+(hint?'<p class="hint">'+hint+'</p>':'')+'</div>';
+}
+function vProfileTab(){
+  var d=S.prof.draft;if(!d)return skeletons();
+  var filled=['job_title','interests','skills','capital_toman','risk'].filter(function(k){return d[k]}).length;
+  return '<form id="profileForm" class="panel" novalidate style="max-width:760px">'
+   +'<div class="note">'+ICON('shield')+'<span>همه‌ی فیلدها اختیاری است. چیزی را که نمی‌دانید خالی بگذارید و حدس نزنید.</span></div>'
+   +'<h2>دیده‌شدن برای اعضای گروه</h2>'
+   +pfField('job_title','عنوان یا تخصص اصلی','مثلاً مهندس برق، بازرگان، پزشک.')
+   +pfField('interests','حوزه‌های موردعلاقه برای کسب‌وکار','چند حوزه را با ویرگول جدا کنید؛ مثلاً غذا، انرژی خورشیدی، واردات.','area')
+   +'<h2>فقط برای شما و مدیر '+ICON('lock')+'</h2>'
+   +pfField('skills','مهارت‌ها و تجربه‌ها','','area')
+   +'<div class="field"><span class="lbl">نقش موردعلاقه در تیم<span class="opt">اختیاری</span></span><div class="chips">'
+   +ROLES.map(function(r){return '<button type="button" class="chip" data-act="prole" data-v="'+r[0]+'" aria-pressed="'+(d.team_roles.indexOf(r[0])>=0)+'">'+r[1]+'</button>'}).join('')+'</div></div>'
+   +'<div class="grid2">'+pfField('hours_per_week','ساعت آزاد در هفته','','','ساعت')+pfField('capital_toman','سرمایه‌ی قابل‌اختصاص','برای همه‌ی ایده‌ها روی هم.','','تومان')+'</div>'
+   +'<div class="grid2">'+pfField('max_loss_toman','حداکثر زیان قابل‌تحمل','اگر همه‌چیز شکست بخورد.','','تومان')
+   +'<div class="field"><span class="lbl">افق زمانی تا اولین درآمد<span class="opt">اختیاری</span></span><div class="chips">'
+   +HZ.map(function(h){return '<button type="button" class="chip" data-act="phz" data-v="'+h+'" aria-pressed="'+(d.horizon_months===h)+'">'+fa(h)+' ماه</button>'}).join('')+'</div></div></div>'
+   +'<div class="field"><span class="lbl">ریسک‌پذیری<span class="opt">اختیاری</span></span><div class="score" style="grid-template-columns:repeat(5,1fr)">'
+   +[1,2,3,4,5].map(function(n){return '<button type="button" data-act="prisk" data-v="'+n+'" aria-pressed="'+(d.risk===n)+'">'+fa(n)+'</button>'}).join('')+'</div><p class="hint">۱ = بسیار محتاط، ۵ = ریسک‌پذیر.</p></div>'
+   +pfField('constraints','محدودیت‌ها یا ملاحظات شخصی','مثلاً همزمان شغل تمام‌وقت دارم.','area')
+   +'<div class="row"><button class="btn primary" type="submit" '+(S.ui.busy?'disabled':'')+'>'+ICON('check')+'ذخیره‌ی پروفایل</button><span class="hint">'+(filled?'پروفایل شما تا حدی پر شده است.':'پروفایل شما هنوز خالی است.')+'</span></div></form>';
+}
+function vMembersTab(){
+  var rows=S.prof.dir;
+  if(!rows.length)return '<div class="empty">'+EMPTYART+'<b>هنوز عضوی ثبت نشده است</b></div>';
+  return '<p class="hint" style="margin:0 0 10px">در این فهرست فقط نام، تخصص و حوزه‌های موردعلاقه دیده می‌شود. سرمایه، ریسک و جزئیات دیگر فقط برای مدیر و خود فرد است. نام اعضا هرگز کنار ایده‌ای که ثبت کرده‌اند نشان داده نمی‌شود.</p>'
+   +'<div class="cards">'+rows.map(function(m){
+     return '<article class="idea"><div class="body"><h3>'+esc(m.display_name)+'</h3><p class="desc" style="min-height:0">'+esc(m.job_title||'تخصص ثبت نشده')+'</p>'
+      +'<dl class="facts" style="grid-template-columns:1fr"><div><dt>حوزه‌های موردعلاقه</dt><dd style="white-space:normal">'+esc(m.interests||'—')+'</dd></div></dl></div></article>'}).join('')+'</div>';
+}
+function vAccountTab(){
   var p=S.profile,stm={approved:'تأییدشده',pending:'در انتظار تأیید',blocked:'مسدود'};
-  return '<div class="pagehead"><h1>حساب من</h1></div><div class="panel" style="max-width:520px"><dl class="kv"><dt>ایمیل</dt><dd dir="ltr" style="text-align:right">'+esc(p.email||'')+'</dd><dt>وضعیت</dt><dd>'+esc(stm[p.status]||p.status)+(p.is_admin?' · مدیر':'')+'</dd></dl>'
+  return '<div class="panel" style="max-width:520px"><dl class="kv"><dt>ایمیل</dt><dd dir="ltr" style="text-align:right">'+esc(p.email||'')+'</dd><dt>وضعیت</dt><dd>'+esc(stm[p.status]||p.status)+(p.is_admin?' · مدیر':'')+'</dd></dl>'
    +'<div class="field"><span class="lbl">ظاهر سایت</span><div class="themeseg"><button type="button" class="themeopt" data-act="theme" data-v="light" aria-pressed="'+(curTheme()!=='dark')+'"><i class="l"></i>روشن</button><button type="button" class="themeopt" data-act="theme" data-v="dark" aria-pressed="'+(curTheme()==='dark')+'"><i class="d"></i>تیره</button></div><p class="hint">انتخاب شما فقط روی همین مرورگر ذخیره می‌شود.</p></div>'
-   +'<form id="nameForm" style="display:flex;flex-direction:column;gap:10px"><div class="field"><label class="lbl" for="nm">نام نمایشی</label><input class="in" id="nm" maxlength="80" value="'+esc(p.display_name||'')+'"><p class="hint">این نام فقط برای مدیر دیده می‌شود.</p></div><div class="row"><button class="btn primary" type="submit">ذخیره‌ی نام</button><button class="btn" type="button" data-act="logout">خروج از حساب</button></div></form></div>';
+   +'<form id="nameForm" style="display:flex;flex-direction:column;gap:10px"><div class="field"><label class="lbl" for="nm">نام نمایشی</label><input class="in" id="nm" maxlength="80" value="'+esc(p.display_name||'')+'"><p class="hint">این نام در فهرست اعضا دیده می‌شود، ولی هرگز کنار ایده‌هایی که ثبت می‌کنید نشان داده نمی‌شود.</p></div><div class="row"><button class="btn primary" type="submit">ذخیره‌ی نام</button><button class="btn" type="button" data-act="logout">خروج از حساب</button></div></form></div>';
+}
+function vMe(){
+  var t=S.ui.metab,tabs=[['profile','پروفایل من'],['members','اعضای گروه'],['account','حساب']];
+  return '<div class="pagehead"><h1>حساب من</h1></div><div class="tabs" role="tablist">'
+   +tabs.map(function(x){return '<button role="tab" data-act="metab" data-v="'+x[0]+'" aria-selected="'+(t===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'
+   +(t==='members'?vMembersTab():t==='account'?vAccountTab():vProfileTab());
 }
 
 /* ---------- مدیریت ---------- */
@@ -647,6 +785,15 @@ function vAdmin(){
       }).join('')+'</tbody></table></div>'
      +'<h2 style="margin-top:8px">پروفایل‌های قدیمی بدون حساب ('+fa(free.length)+')</h2>'
      +(free.length?'<div class="tblw"><table class="tbl"><thead><tr><th>نام</th><th>عنوان</th><th>رأی‌های قدیمی</th></tr></thead><tbody>'+free.map(function(m){return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.job_title||'—')+'</td><td>'+fa(A.legacy[m.id]||0)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="hint">همه‌ی پروفایل‌های قدیمی به حساب وصل شده‌اند.</p>');
+  }else if(t==='profiles'){
+    var D=A.details,RL={};ROLES.forEach(function(r){RL[r[0]]=r[1]});
+    var withP=D.filter(function(d){return d.status==='approved'&&(d.capital_toman!=null||d.risk!=null||d.job_title||d.interests)});
+    var caps=D.filter(function(d){return d.capital_toman!=null}),rks=D.filter(function(d){return d.risk!=null});
+    var sum=caps.reduce(function(a,d){return a+Number(d.capital_toman)},0),avg=rks.length?rks.reduce(function(a,d){return a+d.risk},0)/rks.length:null;
+    body='<div class="tiles"><div class="tile"><b>'+fa(withP.length)+'</b><span>پروفایل پرشده</span></div><div class="tile t2"><b>'+(caps.length?esc(tomanShort(sum)):'—')+'</b><span>جمع سرمایه‌ی اعلام‌شده ('+fa(caps.length)+' نفر)</span></div><div class="tile t4"><b>'+(avg==null?'—':fa(avg,1))+'</b><span>میانگین ریسک‌پذیری از ۵</span></div></div>'
+     +'<div class="tblw"><table class="tbl"><thead><tr><th>نام</th><th>تخصص</th><th>حوزه‌ها</th><th>نقش‌ها</th><th>ساعت/هفته</th><th>سرمایه</th><th>حداکثر زیان</th><th>ریسک</th><th>افق</th><th>ملاحظات</th></tr></thead><tbody>'
+     +D.map(function(d){return '<tr><td><b>'+esc(d.display_name||'—')+'</b><br><span class="hint" dir="ltr">'+esc(d.email||'')+'</span></td><td>'+esc(d.job_title||'—')+'</td><td>'+esc(d.interests||'—')+'</td><td>'+esc((d.team_roles||[]).map(function(r){return RL[r]||r}).join('، ')||'—')+'</td><td>'+(d.hours_per_week==null?'—':fa(Number(d.hours_per_week)))+'</td><td>'+(d.capital_toman==null?'—':esc(tomanShort(Number(d.capital_toman))))+'</td><td>'+(d.max_loss_toman==null?'—':esc(tomanShort(Number(d.max_loss_toman))))+'</td><td>'+(d.risk==null?'—':fa(d.risk))+'</td><td>'+(d.horizon_months==null?'—':fa(d.horizon_months)+' ماه')+'</td><td>'+esc(d.constraints||'—')+'</td></tr>'}).join('')+'</tbody></table></div>'
+     +'<p class="hint">این جمع‌ها فقط از اطلاعاتی است که اعضا خودشان وارد کرده‌اند؛ جای خالی یعنی هنوز وارد نشده، نه صفر.</p>';
   }else if(t==='audit'){
     var AL={user_status:'تغییر وضعیت حساب',link_member:'وصل پروفایل قدیمی',idea_status:'تغییر وضعیت ایده',idea_archived:'آرشیو ایده',idea_deep:'ذخیره‌ی بررسی تخصصی',assign_owner:'تعیین پیشنهاددهنده'};
     var nm={};A.users.forEach(function(u){nm[u.user_id]=u.display_name||u.email});
@@ -657,7 +804,7 @@ function vAdmin(){
         return '<tr><td><a href="#/idea/'+esc(i.id)+'"><b>'+esc(i.title)+'</b></a></td><td>'+esc(o.owner_name||'نامشخص')+'</td><td>'+fa(r.votes_count||0)+'</td><td>'+(r.votes_count?fa(r.avg_interest,1):'—')+'</td><td><span class="badge b-'+st.k+'">'+esc(st.t)+'</span></td></tr>'}).join('')+'</tbody></table></div>';
   }
   return '<div class="pagehead"><div><h1>مدیریت</h1><p class="sub">'+(pend?'<b>'+fa(pend)+'</b> حساب منتظر تأیید است.':'حساب منتظر تأییدی وجود ندارد.')+'</p></div></div>'
-   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button></div>'
+   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="profiles" aria-selected="'+(t==='profiles')+'">پروفایل اعضا</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button></div>'
    +'<div style="display:flex;flex-direction:column;gap:14px">'+body+'</div>';
 }
 
@@ -730,6 +877,14 @@ document.addEventListener('click',async function(e){
     if(act==='recheck'){await refresh();return}
     if(act==='authtab'){S.ui.authTab=v;S.ui.authMsg='';render();return}
     if(act==='theme'){setTheme(v);render();return}
+    if(act==='metab'){S.ui.metab=v;render();return}
+    if(act==='prole'||act==='prisk'||act==='phz'){
+      var dr=S.prof.draft;
+      if(act==='prole'){var ix=dr.team_roles.indexOf(v);if(ix>=0)dr.team_roles.splice(ix,1);else dr.team_roles.push(v)}
+      else if(act==='prisk')dr.risk=(dr.risk===Number(v)?0:Number(v));
+      else dr.horizon_months=(dr.horizon_months===Number(v)?0:Number(v));
+      var sc2=window.scrollY;render();window.scrollTo(0,sc2);return;
+    }
     if(act==='filter'){S.ui.filter=v;render();return}
     if(act==='atab'){S.ui.tab=v;render();return}
     if(act==='score'||act==='join'){
@@ -763,6 +918,7 @@ document.addEventListener('click',async function(e){
 });
 document.addEventListener('input',function(e){
   var t=e.target;
+  if(t.dataset&&t.dataset.pf&&S.prof.draft){S.prof.draft[t.dataset.pf]=t.value;return}
   if(t.id==='q'){S.ui.q=t.value;var pos=t.selectionStart;render();var n=$('#q');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}return}
   if(t.dataset&&t.dataset.f&&S.ui.form){
     S.ui.form[t.dataset.f]=t.value;
@@ -811,6 +967,15 @@ document.addEventListener('submit',async function(e){
       if(res.error){S.ui.authMsg='!'+errText(res.error);render();return}
       if(up&&!res.data.session){S.ui.authTab='in';S.ui.authMsg='ثبت‌نام انجام شد. اگر ایمیل تأیید برایتان آمد آن را باز کنید، سپس وارد شوید.';render();return}
       S.session=res.data.session;await refresh();return;
+    }
+    if(f.id==='profileForm'){
+      var dd=S.prof.draft,pl={job_title:dd.job_title.trim(),interests:dd.interests.trim(),skills:dd.skills.trim(),constraints:dd.constraints.trim(),team_roles:dd.team_roles,risk:dd.risk?String(dd.risk):'',horizon_months:dd.horizon_months?String(dd.horizon_months):''};
+      var bad=null;['hours_per_week','capital_toman','max_loss_toman'].forEach(function(k){var n=normNum(dd[k]);if(n===null)bad=k;pl[k]=n||''});
+      if(bad){toast('عددها را فقط با رقم و بدون منفی وارد کنید.',true);return}
+      if(pl.capital_toman&&pl.max_loss_toman&&Number(pl.max_loss_toman)>Number(pl.capital_toman)){toast('حداکثر زیان نمی‌تواند از سرمایه بیشتر باشد.',true);return}
+      S.ui.busy=true;render();
+      var rp=await sb.rpc('save_my_profile',{p:pl});S.ui.busy=false;if(rp.error)throw rp.error;
+      S.prof.draft=null;await loadData();toast('پروفایل ذخیره شد.');render();return;
     }
     if(f.id==='nameForm'){
       var r=await sb.rpc('update_my_name',{p_name:$('#nm').value});if(r.error)throw r.error;
