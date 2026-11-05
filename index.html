@@ -206,6 +206,12 @@ body{background:radial-gradient(1200px 500px at 85% -10%,#e3f1f0 0%,transparent 
 .authwrap::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600' fill='none' stroke='%233cc4bf' stroke-opacity='.14'><circle cx='300' cy='300' r='80'/><circle cx='300' cy='300' r='160'/><circle cx='300' cy='300' r='240'/><circle cx='300' cy='300' r='320'/><path d='M300 0v600M0 300h600'/></svg>") center/760px no-repeat;pointer-events:none}
 .authcard{position:relative}
 
+/* UX refinement and export */
+.topin{min-height:66px}.nav a{padding:9px 13px;border:1px solid transparent}.nav a[aria-current="page"]{border-color:rgba(255,255,255,.16)}
+main{padding-top:26px}.panel,.tile,.idea{box-shadow:0 3px 14px rgba(16,33,46,.055)}.panel{padding:20px}.btn{min-height:44px;border-radius:12px}.in{background:var(--surface);min-height:48px}
+.exporthero{border-radius:18px}.note{line-height:1.9}
+@media(max-width:700px){.panel{padding:16px}.pagehead{align-items:flex-start}}
+
 /* ---------- dark theme (user switch, default light) ---------- */
 :root[data-theme="dark"]{
   color-scheme:dark;
@@ -764,6 +770,24 @@ function vMe(){
    +(t==='members'?vMembersTab():t==='account'?vAccountTab():vProfileTab());
 }
 
+function aiExportData(){
+ var D=(S.admin.details||[]).filter(function(x){return x.status==='approved'});
+ var chosen=S.ideas.filter(function(i){return !i.archived&&['selected','validating','launched','paused'].indexOf(i.status)>=0});
+ function item(i){var r=S.results[i.id]||{};return {title:i.title,summary:i.summary,problem:i.problem,solution:i.solution,target:i.target,product:i.product,advantage:i.advantage,industry:i.industry,geo:i.geo,status:i.status,financials:{capital_toman:i.capital_toman,price_per_unit:i.price_per_unit,unit_cost:i.unit_cost,monthly_sales:i.monthly_sales},vote_summary:{count:r.votes_count||0,average_interest:r.avg_interest||null,yes:r.yes_count||0,maybe:r.maybe_count||0,no:r.no_count||0},specialist_review:i.deep||{}}}
+ var members=D.map(function(d,n){return {member:'عضو '+(n+1),job_title:d.job_title,interests:d.interests,skills:d.skills,team_roles:d.team_roles,hours_per_week:d.hours_per_week,capital_toman:d.capital_toman,max_loss_toman:d.max_loss_toman,risk:d.risk,horizon_months:d.horizon_months,constraints:d.constraints}});
+ return {generated_at:new Date().toISOString(),privacy:'نام، ایمیل و شناسه‌ی حساب حذف شده؛ پروفایل‌ها ناشناس‌اند. رأی فردی صادر نمی‌شود. سرمایه و محدودیت‌ها محرمانه‌اند.',selected_ideas:chosen.map(item),team_profiles:members,active_ideas_context:S.ideas.filter(function(i){return !i.archived}).map(item),analysis_prompt:'با داده‌های زیر تناسب ایده‌ها با علایق، مهارت، زمان، سرمایه، ریسک‌پذیری و افق اعضا را تحلیل کن. ایده‌ها را با معیارهای روشن اولویت‌بندی کن؛ خلأهای داده را مشخص کن؛ ترکیب تیم پیشنهادی و نقشه‌راه ۳۰، ۶۰ و ۹۰ روزه با آزمایش‌های کم‌هزینه، مسئولیت‌ها، معیار موفقیت و نقاط ادامه/توقف ارائه بده. داده‌ی خالی را حدس نزن و از خوداظهاری‌ها تشخیص شخصیتی نساز. رأی گروه اثبات تقاضای بازار نیست.'};
+}
+function runAIExport(){
+ if(!isAdmin()||!S.admin.loaded){toast('این بخش فقط برای مدیر است.',true);return}
+ var b=new Blob([JSON.stringify(aiExportData(),null,2)],{type:'application/json;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');
+ a.href=u;a.download='radar-idea-ai-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);toast('فایل خروجی آماده شد.');
+}
+function vAIExport(){
+ var n=S.admin.details.filter(function(d){return d.status==='approved'}).length;
+ var k=S.ideas.filter(function(i){return !i.archived&&['selected','validating','launched','paused'].indexOf(i.status)>=0}).length;
+ return '<div class="hero"><div><h1>مرکز خروجی تحلیل هوشمند</h1><p>بسته‌ی داده برای تحلیل ایده‌های منتخب و ظرفیت اجرایی اعضای گروه</p></div></div><div class="tiles"><div class="tile"><b>'+fa(k)+'</b><span>ایده‌ی منتخب و در حال پیگیری</span></div><div class="tile t4"><b>'+fa(n)+'</b><span>پروفایل اعضای تأییدشده</span></div></div><div class="panel"><h2>دریافت داده‌های تحلیل</h2><p class="sub">خروجی شامل شرح و وضعیت ایده‌ها، بررسی تخصصی، رأی‌های تجمیعی، علایق، مهارت‌ها، نقش‌های موردعلاقه، زمان آزاد، سرمایه، ریسک‌پذیری، افق زمانی و محدودیت‌های اعضاست.</p><div class="note">'+ICON('shield')+'<span>نام، ایمیل و شناسه‌ی اعضا حذف می‌شود و پروفایل‌ها ناشناس خواهند بود. رأی فردی صادر نمی‌شود. اطلاعات سرمایه و محدودیت‌ها همچنان محرمانه‌اند؛ فایل را فقط در ابزار مورد اعتماد و با رعایت رضایت اعضا استفاده کنید.</span></div><button class="btn primary" data-act="exportAI">'+ICON('out')+'دریافت فایل JSON برای هوش مصنوعی</button></div><div class="panel"><h2>اطلاعات تکمیلی پیشنهادی</h2><ul><li>دلیل علاقه یا عدم علاقه‌ی اعضا به هر ایده</li><li>تجربه‌ی اجرایی و نمونه‌کارهای مرتبط</li><li>دسترسی به مشتری، تأمین‌کننده و شبکه‌ی ارتباطی</li><li>تعهد زمانی واقعی و اولویت‌های فردی</li><li>شواهد اعتبارسنجی بازار مانند مصاحبه و پیش‌سفارش</li></ul><p class="hint">این موارد هنوز در سامانه ثبت نشده‌اند و صرفاً شکاف‌های اطلاعاتی پیشنهادی‌اند.</p></div>';
+}
+
 /* ---------- مدیریت ---------- */
 function vAdmin(){
   if(!isAdmin())return '<div class="empty"><b>این بخش فقط برای مدیر است.</b></div>';
@@ -804,8 +828,8 @@ function vAdmin(){
         return '<tr><td><a href="#/idea/'+esc(i.id)+'"><b>'+esc(i.title)+'</b></a></td><td>'+esc(o.owner_name||'نامشخص')+'</td><td>'+fa(r.votes_count||0)+'</td><td>'+(r.votes_count?fa(r.avg_interest,1):'—')+'</td><td><span class="badge b-'+st.k+'">'+esc(st.t)+'</span></td></tr>'}).join('')+'</tbody></table></div>';
   }
   return '<div class="pagehead"><div><h1>مدیریت</h1><p class="sub">'+(pend?'<b>'+fa(pend)+'</b> حساب منتظر تأیید است.':'حساب منتظر تأییدی وجود ندارد.')+'</p></div></div>'
-   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="profiles" aria-selected="'+(t==='profiles')+'">پروفایل اعضا</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button></div>'
-   +'<div style="display:flex;flex-direction:column;gap:14px">'+body+'</div>';
+   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="profiles" aria-selected="'+(t==='profiles')+'">پروفایل اعضا</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button><button role="tab" data-act="atab" data-v="export" aria-selected="'+(t==='export')+'">خروجی تحلیل</button></div>'
+   +'<div style="display:flex;flex-direction:column;gap:14px">'+(t==='export'?vAIExport():body)+'</div>';
 }
 
 /* ---------- ورود، انتظار، مسدود ---------- */
@@ -873,6 +897,7 @@ document.addEventListener('click',async function(e){
   var b=e.target.closest('[data-act]');if(!b)return;
   var act=b.dataset.act,id=b.dataset.id,v=b.dataset.v;
   try{
+    if(act==='exportAI'){runAIExport();return}
     if(act==='logout'){await sb.auth.signOut();S.session=null;S.profile=null;S.ui.vote={};render();return}
     if(act==='recheck'){await refresh();return}
     if(act==='authtab'){S.ui.authTab=v;S.ui.authMsg='';render();return}
