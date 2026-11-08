@@ -282,6 +282,7 @@ body{background:radial-gradient(1200px 500px at 85% -10%,#e3f1f0 0%,transparent 
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zM9 12l2 2 4-4"/></symbol>
 <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7.5 11 12 15.5 16.5 11M5 19h14"/></symbol>
 <symbol id="i-out" viewBox="0 0 24 24"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h10"/></symbol>
 <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
@@ -765,6 +766,157 @@ function vMe(){
 }
 
 /* ---------- مدیریت ---------- */
+/* ---------- خروجی برای تحلیل با هوش مصنوعی ---------- */
+var EXP_STAGE={new:'جدید (در حال رأی‌گیری)',selected:'منتخب برای بررسی',validating:'در بررسی تخصصی',paused:'متوقف',launched:'راه‌اندازی‌شده'};
+var EXP_JOIN={yes:'شریک می‌شوم',maybe:'شاید',no:'نه'};
+var EXP_PROMPT=[
+'نقش شما: مشاور ارشد راه‌اندازی کسب‌وکار (استارتاپ و کسب‌وکار کوچک) با تسلط بر بازار ایران.',
+'ورودی: داده‌های یک گروه از دوستان/همکاران که در کنار شغل اصلی می‌خواهند یک کسب‌وکار جانبی راه بیندازند. داده‌ها شامل ایده‌ها، رأی و علاقه‌ی اعضا، و مشخصات اعضا (تخصص، زمان آزاد، سرمایه، حداکثر زیان قابل تحمل، ریسک‌پذیری و افق زمانی) است.',
+'',
+'وظایف (به ترتیب):',
+'۱) اعتبارسنجی بازار: برای هر ایده، با جست‌وجوی وب و داده‌های به‌روز، اندازه و روند بازار، رقبای اصلی و قیمت‌ها، الزامات قانونی/مجوزها، و فرضیه‌های مالی ایده (قیمت، هزینه، فروش ماهانه) را بسنج. هر ادعای بازار باید منبع و تاریخ داشته باشد.',
+'۲) امتیازدهی شفاف: ایده‌ها را با معیارهای صریح (بازار، ریسک، سرمایه‌ی لازم در برابر سرمایه‌ی تیم، تناسب مهارت‌ها و نقش‌ها، زمان تا اولین درآمد، علاقه‌ی اعضا) امتیاز بده و جدول مقایسه بساز.',
+'۳) انتخاب: ۲ تا ۳ ایده‌ی برتر و یک ایده‌ی اصلی را با دلیل پیشنهاد بده؛ بگو چه چیزی باید درست باشد تا انتخاب تغییر کند.',
+'۴) نقشه‌راه تا اولین درآمد برای ایده‌ی اصلی: فازها، تقویم هفته‌به‌هفته، وظیفه‌ها به تفکیک نقش و (در صورت وجود) هر عضو بر اساس ساعت آزادش، بودجه‌ی هر فاز با رعایت جمع سرمایه و حداکثر زیان اعضا، شاخص‌های موفقیت (KPI) و معیار توقف یا تغییر مسیر.',
+'۵) آزمایش‌های ارزان: برای مهم‌ترین فرضیه‌ها، آزمایش‌هایی که در کمتر از ۲ هفته و با هزینه‌ی کم جواب بدهند.',
+'۶) ریسک‌ها و برنامه‌ی جایگزین.',
+'',
+'قواعد: ۱) فقط روی داده‌ی همین فایل و منابع وب قابل‌ارجاع تکیه کن و حدس را حدس بنامی. ۲) خالی‌بودن یک خانه یعنی «هنوز وارد نشده»، نه صفر. ۳) همه‌ی مبالغ به تومان است. ۴) اگر به وب دسترسی نداری، همین را اول پاسخ اعلام کن و بازار را «تأییدنشده» علامت بزن. ۵) خروجی را با تیترهای مشخص، جدول و فهرست وظایف بنویس و در پایان ۵ پرسش که پاسخشان تصمیم را تغییر می‌دهد بپرس.'
+].join('\n');
+
+function expNum(v){return v==null||v===''?null:Number(v)}
+function expRound(v,d){return v==null?null:Math.round(v*d)/d}
+function expDerived(i){
+  var p=expNum(i.price_per_unit),c=expNum(i.unit_cost),m=expNum(i.monthly_sales),cap=expNum(i.capital_toman),o={};
+  o.margin=(p!=null&&c!=null)?p-c:null;
+  o.margin_pct=(o.margin!=null&&p>0)?expRound(o.margin/p*100,10):null;
+  o.revenue=(p!=null&&m!=null)?p*m:null;
+  o.gross=(o.margin!=null&&m!=null)?o.margin*m:null;
+  o.payback=(cap!=null&&o.gross>0)?expRound(cap/o.gross,10):null;
+  return o;
+}
+var EXP_IDEA_SPEC=[['id','شناسه'],['title','عنوان ایده'],['stage','وضعیت'],['archived','آرشیو‌شده'],['created','تاریخ ثبت'],['proposer','پیشنهاددهنده'],['summary','خلاصه'],['problem','مسئله'],['solution','راه‌حل'],['target','بازار هدف'],['product','محصول یا خدمت'],['advantage','مزیت رقابتی'],['industry','صنعت'],['geo','حوزه‌ی جغرافیایی (کد)'],['capital_toman','سرمایه‌ی اولیه (تومان)'],['price_per_unit','قیمت هر واحد (تومان)'],['unit_cost','هزینه‌ی مستقیم هر واحد (تومان)'],['monthly_sales','فروش ماهانه‌ی تخمینی (واحد)'],['margin','سود ناخالص هر واحد (تومان)'],['margin_pct','حاشیه‌ی سود ناخالص (درصد)'],['monthly_revenue','درآمد ماهانه‌ی تخمینی (تومان)'],['monthly_gross_profit','سود ناخالص ماهانه (تومان)'],['payback_months','بازگشت سرمایه (ماه، بدون هزینه‌ی ثابت)'],['votes','تعداد رأی'],['avg_interest','میانگین علاقه (۱ تا ۱۰)'],['yes','شریک می‌شوم'],['maybe','شاید'],['no','نه'],['deep_market','بررسی تخصصی: بازار'],['deep_competitors','بررسی تخصصی: رقبا'],['deep_profit','بررسی تخصصی: سودآوری'],['deep_risks','بررسی تخصصی: ریسک‌ها'],['deep_validation','بررسی تخصصی: اعتبارسنجی']];
+var EXP_TEAM_SPEC=[['idea_id','شناسه‌ی ایده'],['title','عنوان ایده'],['yes_count','تعداد «شریک می‌شوم»'],['maybe_count','تعداد «شاید»'],['yes_members','اعضای «شریک می‌شوم»'],['capital_needed','سرمایه‌ی لازم (تومان)'],['yes_capital_sum','جمع سرمایه‌ی «شریک می‌شوم» (تومان)'],['yes_maybe_capital_sum','جمع سرمایه‌ی «شریک و شاید» (تومان)'],['capital_coverage_pct','پوشش سرمایه‌ی لازم (درصد)'],['yes_hours_sum','جمع ساعت آزاد هفتگی «شریک می‌شوم»'],['yes_roles','نقش‌های پوشش‌داده‌شده'],['missing_roles','نقش‌های بدون پوشش'],['yes_avg_risk','میانگین ریسک‌پذیری (۱ تا ۵)'],['yes_min_max_loss','کمترین «حداکثر زیان» بین شرکا (تومان)']];
+var EXP_MEMBER_SPEC=[['code','کد عضو'],['name','نام'],['email','ایمیل'],['status','وضعیت حساب'],['job_title','عنوان شغلی/تخصص'],['interests','حوزه‌های مورد علاقه'],['skills','مهارت‌ها'],['hours_per_week','ساعت آزاد در هفته'],['roles','نقش‌ها در تیم'],['capital_toman','سرمایه‌ی قابل‌ورود (تومان)'],['max_loss_toman','حداکثر زیان قابل تحمل (تومان)'],['risk','ریسک‌پذیری (۱ بسیار محتاط تا ۵ ریسک‌پذیر)'],['horizon_months','افق زمانی (ماه)'],['constraints','ملاحظات'],['ballots','تعداد رأی‌ها'],['yes_votes','تعداد «شریک می‌شوم»'],['profile_updated','آخرین به‌روزرسانی پروفایل']];
+var EXP_BALLOT_SPEC=[['idea_id','شناسه‌ی ایده'],['idea_title','عنوان ایده'],['voter','رأی‌دهنده'],['interest','علاقه (۱ تا ۱۰)'],['join','تمایل به مشارکت'],['updated','زمان آخرین ویرایش رأی']];
+
+async function gatherExport(anon){
+  var br=await sb.from('ballots').select('idea_id,user_id,legacy_member_id,interest,join_choice,updated_at');
+  if(br.error)throw br.error;
+  var A=S.admin,RL={};ROLES.forEach(function(r){RL[r[0]]=r[1]});
+  var det={};(A.details||[]).forEach(function(d){det[d.user_id]=d});
+  var users=A.users.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at)});
+  var code={},lm={},n=0,ln=0;
+  A.members.forEach(function(m){lm[m.id]=m});
+  users.forEach(function(u){n++;code[u.user_id]='M'+(n<10?'0':'')+n});
+  var who=function(uid){var u=users.filter(function(x){return x.user_id===uid})[0];return anon?(code[uid]||''):((u&&(u.display_name||u.email))||code[uid]||'')};
+  var voter=function(b){
+    if(b.user_id)return anon?(code[b.user_id]||'M؟'):(who(b.user_id));
+    var k='L:'+b.legacy_member_id;if(!code[k]){ln++;code[k]='L'+(ln<10?'0':'')+ln}
+    return anon?code[k]:((lm[b.legacy_member_id]&&lm[b.legacy_member_id].name)||code[k]);
+  };
+  var ideaTitle={};S.ideas.forEach(function(i){ideaTitle[i.id]=i.title});
+  var B=br.data||[];
+  var ballots=B.map(function(b){return {idea_id:b.idea_id,idea_title:ideaTitle[b.idea_id]||'',voter:voter(b),interest:b.interest,join:EXP_JOIN[b.join_choice]||'',updated:(b.updated_at||'').slice(0,10)}});
+  var byUser={};B.forEach(function(b){if(b.user_id){var x=byUser[b.user_id]||(byUser[b.user_id]={n:0,y:0});x.n++;if(b.join_choice==='yes')x.y++}});
+  var members=users.map(function(u){
+    var d=det[u.user_id]||{},c=byUser[u.user_id]||{n:0,y:0};
+    return {code:code[u.user_id],name:anon?'':(u.display_name||''),email:anon?'':(u.email||''),status:({approved:'تأییدشده',pending:'در انتظار',blocked:'مسدود'})[u.status]||u.status,
+      job_title:d.job_title||'',interests:d.interests||'',skills:d.skills||'',hours_per_week:expNum(d.hours_per_week),
+      roles:(d.team_roles||[]).map(function(r){return RL[r]||r}).join('، '),capital_toman:expNum(d.capital_toman),max_loss_toman:expNum(d.max_loss_toman),
+      risk:expNum(d.risk),horizon_months:expNum(d.horizon_months),constraints:d.constraints||'',ballots:c.n,yes_votes:c.y,profile_updated:(d.updated_at||'').slice(0,10),_uid:u.user_id,_roles:d.team_roles||[]};
+  });
+  var mByUid={};members.forEach(function(m){mByUid[m._uid]=m});
+  var ideas=[],team=[];
+  S.ideas.forEach(function(i){
+    var bs=B.filter(function(b){return b.idea_id===i.id}),iv=bs.filter(function(b){return b.interest!=null}),dv=expDerived(i),o=A.owners[i.id]||{};
+    var avg=iv.length?expRound(iv.reduce(function(a,b){return a+b.interest},0)/iv.length,10):null;
+    var cnt=function(k){return bs.filter(function(b){return b.join_choice===k}).length},dp=i.deep||{};
+    ideas.push({id:i.id,title:i.title,stage:i.archived?'آرشیو':(EXP_STAGE[i.status]||i.status),archived:i.archived?'بله':'خیر',created:(i.created_at||'').slice(0,10),
+      proposer:o.owner_user_id?(anon?(code[o.owner_user_id]||''):who(o.owner_user_id)):(anon?'':(o.owner_name||'')),
+      summary:i.summary||'',problem:i.problem||'',solution:i.solution||'',target:i.target||'',product:i.product||'',advantage:i.advantage||'',industry:i.industry||'',geo:i.geo||'',
+      capital_toman:expNum(i.capital_toman),price_per_unit:expNum(i.price_per_unit),unit_cost:expNum(i.unit_cost),monthly_sales:expNum(i.monthly_sales),
+      margin:dv.margin,margin_pct:dv.margin_pct,monthly_revenue:dv.revenue,monthly_gross_profit:dv.gross,payback_months:dv.payback,
+      votes:iv.length,avg_interest:avg,yes:cnt('yes'),maybe:cnt('maybe'),no:cnt('no'),
+      deep_market:dp.market||'',deep_competitors:dp.competitors||'',deep_profit:dp.profit||'',deep_risks:dp.risks||'',deep_validation:dp.validation||''});
+    var ym=function(k){return bs.filter(function(b){return b.user_id&&b.join_choice===k&&mByUid[b.user_id]}).map(function(b){return mByUid[b.user_id]})};
+    var Y=ym('yes'),M=ym('maybe'),sum=function(L,k){var a=L.filter(function(m){return m[k]!=null});return a.length?a.reduce(function(t,m){return t+m[k]},0):null};
+    var roles={};Y.forEach(function(m){m._roles.forEach(function(r){roles[r]=1})});
+    var ysum=sum(Y,'capital_toman'),ymsum=sum(Y.concat(M),'capital_toman'),need=expNum(i.capital_toman),rk=Y.filter(function(m){return m.risk!=null}),ml=Y.filter(function(m){return m.max_loss_toman!=null});
+    team.push({idea_id:i.id,title:i.title,yes_count:cnt('yes'),maybe_count:cnt('maybe'),yes_members:Y.map(function(m){return anon?m.code:(m.name||m.code)}).join('، '),capital_needed:need,
+      yes_capital_sum:ysum,yes_maybe_capital_sum:ymsum,capital_coverage_pct:(need>0&&ysum!=null)?expRound(ysum/need*100,10):null,yes_hours_sum:sum(Y,'hours_per_week'),
+      yes_roles:ROLES.filter(function(r){return roles[r[0]]}).map(function(r){return r[1]}).join('، '),missing_roles:ROLES.filter(function(r){return r[0]!=='invest'&&!roles[r[0]]}).map(function(r){return r[1]}).join('، '),
+      yes_avg_risk:rk.length?expRound(rk.reduce(function(t,m){return t+m.risk},0)/rk.length,10):null,yes_min_max_loss:ml.length?Math.min.apply(null,ml.map(function(m){return m.max_loss_toman})):null});
+  });
+  var appr=members.filter(function(m){return m.status==='تأییدشده'}),sm=function(k){var a=appr.filter(function(m){return m[k]!=null});return a.length?a.reduce(function(t,m){return t+m[k]},0):null};
+  var rcount={};ROLES.forEach(function(r){rcount[r[1]]=appr.filter(function(m){return m._roles.indexOf(r[0])>=0}).length});
+  var rks=appr.filter(function(m){return m.risk!=null});
+  var summary=[['تعداد اعضای تأییدشده',appr.length],['تعداد پروفایل‌های پرشده (سرمایه/ریسک/تخصص)',appr.filter(function(m){return m.capital_toman!=null||m.risk!=null||m.job_title}).length],
+    ['جمع سرمایه‌ی اعلام‌شده (تومان)',sm('capital_toman')],['جمع حداکثر زیان قابل تحمل (تومان)',sm('max_loss_toman')],['جمع ساعت آزاد هفتگی',sm('hours_per_week')],
+    ['میانگین ریسک‌پذیری (۱ تا ۵)',rks.length?expRound(rks.reduce(function(t,m){return t+m.risk},0)/rks.length,10):null],['تعداد ایده‌های فعال',ideas.filter(function(x){return x.archived==='خیر'}).length]];
+  ROLES.forEach(function(r){summary.push(['تعداد اعضا با نقش «'+r[1]+'»',rcount[r[1]]])});
+  [3,6,12,24].forEach(function(h){summary.push(['اعضا با افق '+h+' ماهه',appr.filter(function(m){return m.horizon_months===h}).length])});
+  members.forEach(function(m){delete m._uid;delete m._roles});
+  var site=(document.title||'رادار ایده — تیم ۲').split('—')[0].trim();
+  return {meta:{site:document.title||'رادار ایده — تیم ۲',exported_at:new Date().toISOString(),anonymized:!!anon,currency:'تومان',note:'خالی‌بودن یک خانه یعنی هنوز وارد نشده، نه صفر. کدهای M.. اعضای دارای حساب و L.. اعضای قدیمی بدون حساب‌اند.'},
+    ideas:ideas,idea_team_fit:team,members:members,ballots:ballots,team_summary:summary.map(function(x){return {metric:x[0],value:x[1]}})};
+}
+
+function expCell(v){return v==null?'':(Array.isArray(v)?v.join('، '):v)}
+function expRows(rows,spec){return rows.map(function(r){var o={};spec.forEach(function(c){o[c[1]]=expCell(r[c[0]])});return o})}
+function loadXLSX(){return new Promise(function(res,rej){
+  if(window.XLSX)return res(window.XLSX);
+  var sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  sc.onload=function(){window.XLSX?res(window.XLSX):rej(new Error('xlsx'))};sc.onerror=function(){rej(new Error('xlsx'))};document.head.appendChild(sc)})}
+function expDownload(name,blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+function expReadme(D){
+  return [['راهنمای فایل'],['این فایل از «'+D.meta.site+'» گرفته شده و برای تحلیل با هوش مصنوعی و ساخت نقشه‌راه تا اولین درآمد آماده است.'],
+    ['زمان خروجی: '+D.meta.exported_at.slice(0,10)+' | ناشناس‌سازی اعضا: '+(D.meta.anonymized?'بله':'خیر')+' | واحد پول: تومان'],[D.meta.note],[''],
+    ['برگه‌ها: «ایده‌ها» (مشخصات مالی و رأی هر ایده)، «تناسب تیم با ایده» (سرمایه، ساعت و نقش شرکا)، «اعضا»، «رأی‌ها»، «خلاصه‌ی تیم».'],
+    ['سود ناخالص = قیمت − هزینه‌ی مستقیم هر واحد. بازگشت سرمایه = سرمایه‌ی اولیه ÷ سود ناخالص ماهانه و هزینه‌های ثابت را شامل نمی‌شود. همه‌ی ارقام ایده‌ها تخمین خود پیشنهاددهنده‌اند، نه داده‌ی بازار.'],[''],
+    ['دستور پیشنهادی برای هوش مصنوعی (همراه با این فایل بدهید):']].concat(EXP_PROMPT.split('\n').map(function(l){return [l]}));
+}
+function expBrief(D){
+  var j=function(x){return '```json\n'+JSON.stringify(x,null,1)+'\n```'};
+  return '# بسته‌ی تحلیل «'+D.meta.site+'»\n\nزمان خروجی: '+D.meta.exported_at.slice(0,10)+' | ناشناس‌سازی اعضا: '+(D.meta.anonymized?'بله':'خیر')+' | واحد پول: تومان\n\n'+D.meta.note+'\n\n## دستور کار\n\n'+EXP_PROMPT
+   +'\n\n## توضیح داده‌ها\n- سود ناخالص = قیمت − هزینه‌ی مستقیم هر واحد؛ بازگشت سرمایه = سرمایه‌ی اولیه ÷ سود ناخالص ماهانه (بدون هزینه‌ی ثابت). ارقام ایده‌ها تخمین پیشنهاددهنده است.\n- ریسک‌پذیری: ۱ بسیار محتاط تا ۵ ریسک‌پذیر. علاقه: ۱ تا ۱۰. تمایل به مشارکت: شریک می‌شوم / شاید / نه.\n- idea_team_fit نشان می‌دهد شرکای هر ایده روی هم چقدر سرمایه، ساعت آزاد و کدام نقش‌ها را دارند.\n\n## خلاصه‌ی تیم\n'+j(D.team_summary)
+   +'\n\n## ایده‌ها\n'+j(D.ideas)+'\n\n## تناسب تیم با هر ایده\n'+j(D.idea_team_fit)+'\n\n## اعضا\n'+j(D.members)+'\n\n## رأی‌ها\n'+j(D.ballots)+'\n';
+}
+async function doExport(kind){
+  var anon=S.ui.expAnon!==false;
+  if(kind==='expCopy'){try{await navigator.clipboard.writeText(EXP_PROMPT);toast('دستور کار کپی شد.')}catch(e){toast('کپی نشد؛ متن را دستی انتخاب کنید.',true)}return}
+  if(!anon&&!await ask({title:'خروجی با نام و ایمیل اعضا',msg:'در این فایل نام، ایمیل و اطلاعات مالی اعضا می‌آید. فقط اگر اعضا موافقند و به سرویس هوش مصنوعی اعتماد دارید ادامه دهید.',ok:'ادامه'}))return;
+  toast('در حال آماده‌سازی خروجی…');
+  await loadAdmin();await loadData();
+  var D=await gatherExport(anon),stamp=new Date().toISOString().slice(0,10),base='radar-ideh-'+stamp;
+  if(kind==='expJson'){expDownload(base+'.json',new Blob([JSON.stringify(D,null,1)],{type:'application/json'}));toast('فایل JSON دانلود شد.');return}
+  if(kind==='expMd'){expDownload(base+'-ai-brief.md',new Blob(['﻿'+expBrief(D)],{type:'text/markdown;charset=utf-8'}));toast('بسته‌ی متنی دانلود شد.');return}
+  var X;try{X=await loadXLSX()}catch(e){toast('کتابخانه‌ی Excel بارگذاری نشد (اینترنت یا فیلتر). از «بسته‌ی متنی» یا JSON استفاده کنید.',true);return}
+  var wb=X.utils.book_new();wb.Workbook={Views:[{RTL:true}]};
+  var add=function(name,aoaOrRows,isAoa){
+    var ws=isAoa?X.utils.aoa_to_sheet(aoaOrRows):X.utils.json_to_sheet(aoaOrRows);
+    var rows=isAoa?aoaOrRows:[Object.keys(aoaOrRows[0]||{})].concat(aoaOrRows.map(function(r){return Object.keys(r).map(function(k){return r[k]})}));
+    var w=[];rows.forEach(function(r){r.forEach(function(c,ix){var l=String(c==null?'':c).length;w[ix]=Math.max(w[ix]||8,Math.min(48,l+2))})});
+    ws['!cols']=w.map(function(x){return {wch:x}});X.utils.book_append_sheet(wb,ws,name)};
+  add('راهنما',expReadme(D),true);
+  add('ایده‌ها',expRows(D.ideas,EXP_IDEA_SPEC));
+  add('تناسب تیم با ایده',expRows(D.idea_team_fit,EXP_TEAM_SPEC));
+  add('اعضا',expRows(D.members,EXP_MEMBER_SPEC));
+  add('رأی‌ها',expRows(D.ballots,EXP_BALLOT_SPEC));
+  add('خلاصه‌ی تیم',[['شاخص','مقدار']].concat(D.team_summary.map(function(x){return [x.metric,x.value==null?'':x.value]})),true);
+  X.writeFile(wb,base+'.xlsx');toast('فایل Excel دانلود شد.');
+}
+function exportTab(){
+  var A=S.admin,anon=S.ui.expAnon!==false;
+  var appr=A.users.filter(function(u){return u.status==='approved'}).length;
+  return '<div class="note warn">'+ICON('shield')+'<span>این خروجی اطلاعات مالی و شخصی اعضا (سرمایه، ریسک‌پذیری، تخصص) را دارد. پیش‌فرض ناشناس است: به‌جای نام و ایمیل، کد عضو (M01…) می‌آید، ولی متن آزاد ایده‌ها و ملاحظات اعضا همان‌طور که نوشته شده می‌آید؛ قبل از ارسال به هوش مصنوعی نگاهی بیندازید.</span></div>'
+   +'<div class="tiles"><div class="tile"><b>'+fa(S.ideas.length)+'</b><span>ایده</span></div><div class="tile t4"><b>'+fa(appr)+'</b><span>عضو تأییدشده</span></div><div class="tile t2"><b>'+fa((A.details||[]).filter(function(d){return d.capital_toman!=null||d.risk!=null||d.job_title}).length)+'</b><span>پروفایل پرشده</span></div></div>'
+   +'<div class="row"><button class="chip" data-act="expAnon" aria-pressed="'+anon+'">ناشناس‌سازی اعضا (پیشنهادی)</button><span class="hint">'+(anon?'نام و ایمیل در فایل نمی‌آید.':'نام و ایمیل اعضا در فایل می‌آید.')+'</span></div>'
+   +'<div class="row"><button class="btn primary" data-act="expXlsx">'+ICON('download')+'دانلود Excel</button><button class="btn" data-act="expMd">'+ICON('download')+'بسته‌ی متنی برای هوش مصنوعی (.md)</button><button class="btn" data-act="expJson">'+ICON('download')+'JSON</button></div>'
+   +'<p class="hint">Excel شش برگه دارد: راهنما، ایده‌ها، تناسب تیم با ایده، اعضا، رأی‌ها، خلاصه‌ی تیم. «بسته‌ی متنی» همه‌ی داده‌ها را همراه با دستور کار در یک فایل دارد و برای دادن مستقیم به هوش مصنوعی بهترین است.</p>'
+   +'<details class="note" style="display:block"><summary style="cursor:pointer;font-weight:700">دستور کار پیشنهادی برای هوش مصنوعی</summary><pre style="white-space:pre-wrap;font:inherit;margin:10px 0 0">'+esc(EXP_PROMPT)+'</pre><div class="row" style="margin-top:10px"><button class="btn sm" data-act="expCopy">کپی دستور</button></div></details>';
+}
+
 function vAdmin(){
   if(!isAdmin())return '<div class="empty"><b>این بخش فقط برای مدیر است.</b></div>';
   if(!S.admin.loaded)return skeletons();
@@ -794,6 +946,8 @@ function vAdmin(){
      +'<div class="tblw"><table class="tbl"><thead><tr><th>نام</th><th>تخصص</th><th>حوزه‌ها</th><th>نقش‌ها</th><th>ساعت/هفته</th><th>سرمایه</th><th>حداکثر زیان</th><th>ریسک</th><th>افق</th><th>ملاحظات</th></tr></thead><tbody>'
      +D.map(function(d){return '<tr><td><b>'+esc(d.display_name||'—')+'</b><br><span class="hint" dir="ltr">'+esc(d.email||'')+'</span></td><td>'+esc(d.job_title||'—')+'</td><td>'+esc(d.interests||'—')+'</td><td>'+esc((d.team_roles||[]).map(function(r){return RL[r]||r}).join('، ')||'—')+'</td><td>'+(d.hours_per_week==null?'—':fa(Number(d.hours_per_week)))+'</td><td>'+(d.capital_toman==null?'—':esc(tomanShort(Number(d.capital_toman))))+'</td><td>'+(d.max_loss_toman==null?'—':esc(tomanShort(Number(d.max_loss_toman))))+'</td><td>'+(d.risk==null?'—':fa(d.risk))+'</td><td>'+(d.horizon_months==null?'—':fa(d.horizon_months)+' ماه')+'</td><td>'+esc(d.constraints||'—')+'</td></tr>'}).join('')+'</tbody></table></div>'
      +'<p class="hint">این جمع‌ها فقط از اطلاعاتی است که اعضا خودشان وارد کرده‌اند؛ جای خالی یعنی هنوز وارد نشده، نه صفر.</p>';
+  }else if(t==='export'){
+    body=exportTab();
   }else if(t==='audit'){
     var AL={user_status:'تغییر وضعیت حساب',link_member:'وصل پروفایل قدیمی',idea_status:'تغییر وضعیت ایده',idea_archived:'آرشیو ایده',idea_deep:'ذخیره‌ی بررسی تخصصی',assign_owner:'تعیین پیشنهاددهنده'};
     var nm={};A.users.forEach(function(u){nm[u.user_id]=u.display_name||u.email});
@@ -803,8 +957,8 @@ function vAdmin(){
      +S.ideas.map(function(i){var o=A.owners[i.id]||{},r=S.results[i.id]||{},st=stageOf(i);
         return '<tr><td><a href="#/idea/'+esc(i.id)+'"><b>'+esc(i.title)+'</b></a></td><td>'+esc(o.owner_name||'نامشخص')+'</td><td>'+fa(r.votes_count||0)+'</td><td>'+(r.votes_count?fa(r.avg_interest,1):'—')+'</td><td><span class="badge b-'+st.k+'">'+esc(st.t)+'</span></td></tr>'}).join('')+'</tbody></table></div>';
   }
-  return '<div class="pagehead"><div><h1>مدیریت</h1><p class="sub">'+(pend?'<b>'+fa(pend)+'</b> حساب منتظر تأیید است.':'حساب منتظر تأییدی وجود ندارد.')+'</p></div></div>'
-   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="profiles" aria-selected="'+(t==='profiles')+'">پروفایل اعضا</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button></div>'
+  return '<div class="pagehead"><div><h1>مدیریت</h1><p class="sub">'+(pend?'<b>'+fa(pend)+'</b> حساب منتظر تأیید است.':'حساب منتظر تأییدی وجود ندارد.')+'</p></div><button class="btn" data-act="expXlsx" title="دانلود داده‌ها (Excel) برای تحلیل با هوش مصنوعی" aria-label="دانلود داده‌ها برای تحلیل با هوش مصنوعی">'+ICON('download')+'<span>دانلود داده‌ها</span></button></div>'
+   +'<div class="tabs" role="tablist"><button role="tab" data-act="atab" data-v="users" aria-selected="'+(t==='users')+'">حساب‌ها'+(pend?' ('+fa(pend)+')':'')+'</button><button role="tab" data-act="atab" data-v="ideas" aria-selected="'+(t==='ideas')+'">ایده‌ها و مالکیت</button><button role="tab" data-act="atab" data-v="profiles" aria-selected="'+(t==='profiles')+'">پروفایل اعضا</button><button role="tab" data-act="atab" data-v="export" aria-selected="'+(t==='export')+'">خروجی برای تحلیل</button><button role="tab" data-act="atab" data-v="audit" aria-selected="'+(t==='audit')+'">گزارش اقدام‌ها</button></div>'
    +'<div style="display:flex;flex-direction:column;gap:14px">'+body+'</div>';
 }
 
@@ -887,6 +1041,8 @@ document.addEventListener('click',async function(e){
     }
     if(act==='filter'){S.ui.filter=v;render();return}
     if(act==='atab'){S.ui.tab=v;render();return}
+    if(act==='expAnon'){S.ui.expAnon=!(S.ui.expAnon!==false);render();return}
+    if(act==='expXlsx'||act==='expMd'||act==='expJson'||act==='expCopy'){await doExport(act);return}
     if(act==='score'||act==='join'){
       var rt=route(),d=S.ui.vote[rt.id]||(S.ui.vote[rt.id]={interest:null,join:''});
       if(act==='score')d.interest=Number(v);else d.join=(d.join===v?'':v);
